@@ -1,0 +1,1339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #5a00b6; -webkit-text-stroke: #5a00b6; background-color: #e7edf5}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #5a00b6; -webkit-text-stroke: #5a00b6; background-color: #e7edf5; min-height: 16.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">import React, { useState, useMemo, useEffect, useRef } from 'react';</span></p>
+<p class="p1"><span class="s1">import {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, AreaChart, Area<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">} from 'recharts';</span></p>
+<p class="p1"><span class="s1">import {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Upload, Users, Briefcase, Building2, ChevronLeft, Clock,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>BarChart2, ArrowRight, Filter, ChevronDown, Check, X, ArrowUpDown, Calendar as CalendarIcon</span></p>
+<p class="p1"><span class="s1">} from 'lucide-react';</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Assets &amp; Constants ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const COLORS = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>bg: '#edf4ed',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>primary: '#a5c869',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>secondary: '#2f3f28',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>tertiary: '#d2beff',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>text: '#2f3f28',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>white: '#ffffff',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>chartPalette: [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#2f3f28', // Dark Green</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#a5c869', // Primary Green</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#563f7a', // Deep Purple</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#d2beff', // Lavender</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#e07a5f', // Terracotta (Contrast)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#3d405b', // Slate</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#81b29a', // Sage</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#f2cc8f', // Sand</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#9980cc', // Rich Lavender</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>'#4a6741', // Forest</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>]</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const LogoMain = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;svg viewBox="0 0 196 46" className="h-10 w-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M146.85,40.97c-4.91,1.07-9.54-1.15-11.72-5.63-1.95-4.03-1.87-10.51.64-14.92,1.86-3.26,5.53-5.15,9.26-4.72,1.64.19,3.37.87,4.54,2.64-2.33.93-3.09,3.89-1.65,5.94,2.4,3.41,7.38,1.54,7.44-2.59.07-4.53-4.8-7.47-8.74-8.17-8.43-1.51-17.36,2.86-19.37,11.53-2.59,11.19,6.03,20.59,17.35,19.54,6.44-.6,11.05-5.03,11.52-11.55l-2.37-.6c-.55,4.07-2.65,7.62-6.89,8.54Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;polygon fill={COLORS.secondary} points="95.99 13.83 85.68 13.83 85.68 16.21 89.22 16.21 89.23 41.69 85.68 41.69 85.68 44.07 99.58 44.07 99.58 41.69 95.99 41.69 95.99 13.83"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M121.84,32.86c0,3.02-.28,8.14-4.21,8.49-2.96.27-4.72-1.27-4.89-4.2v-20.94h10.3v-2.38h-10.29V5.67h-2.19c-.81,4.63-4.85,8.16-9.72,8.16v2.38h5.27v20.35c.29,6.15,5.55,8.91,11.25,7.91,5.69-.99,6.86-6.65,6.79-11.61h-2.3Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M21.16,19.41c-4.58-1.04-13.19-1.4-13.26-7.75-.05-5.56,5.94-6.94,10.4-6.04,5.72,1.15,9.4,6.32,11.46,11.41l2.47-.82-1.79-12.83h-2.3c-.12,1.09-.26,2.35-1.66,2.3-1.17-.04-3.69-1.52-4.99-1.98C13.13.75.67,4.71,1.7,15.31c.61,6.22,7.16,8.9,12.43,10.18,4.56,1.11,13.05,1.33,14,7.09,1.12,6.83-5.09,10.48-11.22,9.25-6.35-1.27-11.11-7.6-13.68-13.14l-2.47.83,2.31,14.54h2.38c.07-2,.9-3.73,3.21-2.9,2.4.86,4.23,2.53,6.99,3.13,9.72,2.13,21.59-4.73,18.57-15.83-1.57-5.77-7.81-7.88-13.04-9.06Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;ellipse fill={COLORS.secondary} cx="92.62" cy="6.28" rx="4.66" ry="4.62"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M193.12,35.41c-.03,1.54.01,5.05-1.59,5.85-1.34.67-2.85-.02-3.01-1.55-.21-5.43.29-11.42,0-16.83-.22-4.36-2.39-7.87-6.7-9.1,0,0-8.89-3.11-13.46,5.33V1h-10.31v2.38h3.67l-.05,38.31h-3.63v2.38h13.98v-2.38h-3.67v-16.44c.15-4.85,3.1-9.2,8.46-8.44,3.87.55,4.92,3.81,5.07,7.25.21,4.77-.39,10.34,0,15.03.36,4.25,3.8,6.34,7.86,5.83,4.89-.62,5.51-5.44,5.49-9.51h-2.13Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M58.35,21.78l8.96,22.88h1.88c2.72-6.84,5.24-14.99,7.87-21.82.68-1.77,1.58-4.25,3.07-5.47.81-.66,1.93-1.01,2.9-1.36v-2.21h-12.28v2.21c1.1.18,2.37.34,3.24,1.11,1.56,1.39.82,3.85.32,5.58-1.14,3.95-2.71,7.88-3.93,11.81l-6.83-18.32h2.88v-2.37h-12.28v2.37h3.52l-6.63,18.08-5.62-18.08h3.53v-2.37h-13.48v2.37h2.7l9.42,28.48h1.89l8.87-22.88Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const LogoSquare = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;svg viewBox="0 0 512 512" className="h-8 w-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;path fill={COLORS.secondary} d="M292.53,210.27c-48.63-11-140.01-14.83-140.66-82.25-.57-59.05,63-73.68,110.32-64.14,60.69,12.24,99.76,67.11,121.62,121.05l26.22-8.65-18.96-136.11h-24.37c-1.28,11.59-2.81,24.9-17.63,24.38-12.43-.43-39.16-16.16-52.97-21.02-88.77-31.25-221.02,10.75-210.06,123.28,6.43,66.05,75.99,94.39,131.91,108.03,48.42,11.8,138.49,14.15,148.51,75.23,11.89,72.45-54.05,111.23-119.07,98.2-67.41-13.51-117.87-80.63-145.14-139.46l-26.25,8.84,24.46,154.33h25.27c.69-21.27,9.58-39.63,34.01-30.82,25.43,9.17,44.87,26.84,74.12,33.24,103.11,22.56,229.1-50.17,197.05-167.97-16.64-61.17-82.92-83.62-138.38-96.16Z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Helpers ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const parseCSV = (text) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const lines = text.split('\n').filter(line =&gt; line.trim() !== '');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const headers = lines[0].split(',').map(h =&gt; h.trim().toLowerCase());</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return lines.slice(1).map(line =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const values = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let currentVal = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let inQuotes = false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>for(let i=0; i&lt;line.length; i++) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if(line[i] === '"') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>inQuotes = !inQuotes;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else if (line[i] === ',' &amp;&amp; !inQuotes) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>values.push(currentVal.trim());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>currentVal = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>currentVal += line[i];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>values.push(currentVal.trim());</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const entry = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>headers.forEach((h, i) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let val = values[i] || '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (h.includes('switcher')) entry.switcher = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (h.includes('date')) entry.dateStr = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (h.includes('department')) entry.department = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (h.includes('client')) entry.client = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (h.includes('task')) entry.task = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (h.includes('time') || h.includes('spent')) entry.minutes = parseInt(val) || 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else entry[h] = val;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (entry.dateStr) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const parts = entry.dateStr.split('/');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (parts.length === 3) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>entry.dateObj = new Date(parts[2], parts[1] - 1, parts[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Adjust month to 0-indexed for JS Date</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>entry.dateObj = new Date();<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return entry;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).filter(e =&gt; e.switcher &amp;&amp; e.client &amp;&amp; e.dateObj instanceof Date &amp;&amp; !isNaN(e.dateObj));</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const getWeekNumber = (d) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return weekNo;</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Components ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const Card = ({ children, className = "", onClick }) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>onClick={onClick}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>className={`bg-white rounded-2xl shadow-sm border border-stone-100 p-6 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} ${className}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{children}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const DetailStat = ({ label, value, sub }) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div className="flex flex-col"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;span className="font-playfair text-stone-500 text-sm mb-1"&gt;{label}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;span className="font-dm text-2xl font-bold text-[#2f3f28]"&gt;{value}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{sub &amp;&amp; &lt;span className="font-dm text-xs text-[#a5c869] font-medium"&gt;{sub}&lt;/span&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const TimeFrameToggle = ({ current, onChange }) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div className="flex bg-stone-100 p-1 rounded-lg"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{['day', 'week', 'month'].map((tf) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>key={tf}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>onClick={() =&gt; onChange(tf)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 capitalize ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>current === tf<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>? 'bg-white text-[#2f3f28] shadow-sm'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>: 'text-stone-500 hover:text-stone-700'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{tf}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1">);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const MultiSelect = ({ options, selected, onChange, label, maxLimit = 6 }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [isOpen, setIsOpen] = useState(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const dropdownRef = useRef(null);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const handleClickOutside = (event) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (dropdownRef.current &amp;&amp; !dropdownRef.current.contains(event.target)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>setIsOpen(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.addEventListener('mousedown', handleClickOutside);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return () =&gt; document.removeEventListener('mousedown', handleClickOutside);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, []);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleToggle = (option) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (selected.includes(option)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>onChange(selected.filter(item =&gt; item !== option));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (selected.length &lt; maxLimit) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>onChange([...selected, option]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="relative" ref={dropdownRef}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>onClick={() =&gt; setIsOpen(!isOpen)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>className="flex items-center gap-2 px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium hover:border-[#a5c869] transition-colors min-w-[130px] justify-between h-full"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;span className="truncate max-w-[100px]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{selected.length === 0 ? `Select ${label}` : `${selected.length} ${label}s`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;ChevronDown size={14} className="text-stone-400" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{isOpen &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-stone-100 p-2 z-50 max-h-64 overflow-y-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="px-2 py-1.5 text-xs font-bold text-stone-400 uppercase tracking-wider mb-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>Max {maxLimit} selections</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{options.map((option) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>key={option}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={() =&gt; handleToggle(option)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:bg-stone-50 transition-colors ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>selected.includes(option) ? 'bg-[#edf4ed] text-[#2f3f28] font-medium' : 'text-stone-600'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;span className="truncate"&gt;{option}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{selected.includes(option) &amp;&amp; &lt;Check size={14} className="text-[#a5c869]" /&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const MultiLineTrendChart = ({ data, lines, timeframe }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!data || data.length === 0) return &lt;div className="h-64 flex items-center justify-center text-stone-400"&gt;No Data&lt;/div&gt;;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="h-80 w-full mt-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;ResponsiveContainer width="100%" height="100%"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;XAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dataKey="name"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>axisLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tickLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tick={{fontSize: 12, fill: '#888'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dy={10}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>interval={timeframe === 'day' ? 'preserveStartEnd' : 0}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>minTickGap={30}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;YAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>axisLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tickLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tick={{fontSize: 12, fill: '#888'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;RechartsTooltip<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>labelStyle={{ fontFamily: 'DM Sans', color: '#666', marginBottom: '0.25rem' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>formatter={(value) =&gt; value.toFixed(1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Legend wrapperStyle={{paddingTop: '20px', fontSize: '12px', fontFamily: 'DM Sans'}} iconType="circle" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{lines.map((lineKey, index) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Line<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>key={lineKey}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>type="monotone"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>dataKey={lineKey}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>stroke={COLORS.chartPalette[index % COLORS.chartPalette.length]}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>strokeWidth={3}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>dot={false}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>activeDot={{ r: 6, strokeWidth: 0 }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/LineChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/ResponsiveContainer&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const SimpleTrendChart = ({ data, timeframe, color = COLORS.primary }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="h-72 w-full mt-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;ResponsiveContainer width="100%" height="100%"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;defs&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;linearGradient id={`color${timeframe}`} x1="0" y1="0" x2="0" y2="1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;stop offset="5%" stopColor={color} stopOpacity={0.3}/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;stop offset="95%" stopColor={color} stopOpacity={0}/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/linearGradient&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/defs&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;XAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dataKey="label"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>axisLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tickLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tick={{fontSize: 12, fill: '#888'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dy={10}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>interval={timeframe === 'day' ? 2 : 0}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;YAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>axisLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tickLine={false}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>tick={{fontSize: 12, fill: '#888'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;RechartsTooltip<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>labelStyle={{ fontFamily: 'DM Sans', color: '#666', marginBottom: '0.25rem' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>formatter={(value) =&gt; value.toFixed(1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Area<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type="monotone"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dataKey="hours"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>stroke={color}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>strokeWidth={3}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>fillOpacity={1}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>fill={`url(#color${timeframe})`}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>activeDot={{ r: 6, strokeWidth: 0 }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/AreaChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/ResponsiveContainer&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// Modified AllocationChart for Scrollable Clients</span></p>
+<p class="p1"><span class="s1">const AllocationChart = ({ data, dataKey = "hours", nameKey = "name", color = null, limit = null, onClick }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const sortedData = [...data].sort((a, b) =&gt; b[dataKey] - a[dataKey]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const displayData = limit ? sortedData.slice(0, limit) : sortedData;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const chartHeight = Math.max(displayData.length * 40, 300); // Dynamic height</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className={`w-full mt-4 ${!limit ? 'overflow-y-auto max-h-[400px]' : 'h-72'}`}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div style={{ height: !limit ? chartHeight : '100%' }}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;ResponsiveContainer width="100%" height="100%"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;BarChart<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>layout="vertical"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>data={displayData}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>margin={{ top: 0, right: 30, left: 40, bottom: 0 }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;XAxis type="number" hide /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;YAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>dataKey={nameKey}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>type="category"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>width={100}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>tick={{fontSize: 11, fill: '#444', fontFamily: 'DM Sans', cursor: onClick ? 'pointer' : 'default'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>interval={0}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={(e) =&gt; onClick &amp;&amp; onClick(e.value)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;RechartsTooltip<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>cursor={{fill: 'transparent'}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>formatter={(value) =&gt; value.toFixed(1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Bar<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>dataKey={dataKey}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>radius={[0, 4, 4, 0]}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>barSize={20}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={(e) =&gt; onClick &amp;&amp; onClick(e[nameKey])}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>cursor={onClick ? 'pointer' : 'default'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{displayData.map((entry, index) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Cell key={`cell-${index}`} fill={color || COLORS.chartPalette[index % COLORS.chartPalette.length]} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Bar&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/BarChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/ResponsiveContainer&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const VerticalBarChart = ({ data, dataKey = "hours", nameKey = "name", height = 300, onClick }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const sortedData = [...data].sort((a, b) =&gt; b[dataKey] - a[dataKey]).slice(0, 15);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div style={{ height: `${height}px` }} className="w-full mt-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;ResponsiveContainer width="100%" height="100%"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;BarChart data={sortedData} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;XAxis<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>dataKey={nameKey}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>tick={{fontSize: 10, fill: '#444', fontFamily: 'DM Sans', cursor: onClick ? 'pointer' : 'default'}}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>interval={0}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>height={30}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>onClick={(e) =&gt; onClick &amp;&amp; onClick(e.value)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;YAxis hide /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;RechartsTooltip<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>cursor={{fill: 'transparent'}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>formatter={(value) =&gt; value.toFixed(1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Bar<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>dataKey={dataKey}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>radius={[4, 4, 0, 0]}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={(e) =&gt; onClick &amp;&amp; onClick(e[nameKey])}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>cursor={onClick ? 'pointer' : 'default'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{sortedData.map((entry, index) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Cell key={`cell-${index}`} fill={COLORS.chartPalette[index % COLORS.chartPalette.length]} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Bar&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/BarChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/ResponsiveContainer&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const TopSwitchersGrid = ({ data, onNavigate }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>{data.map((person, idx) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;div<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>key={idx}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>onClick={() =&gt; onNavigate &amp;&amp; onNavigate(person.switcher)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>className="bg-stone-50 p-4 rounded-xl flex flex-col cursor-pointer hover:bg-stone-100 transition-colors border border-transparent hover:border-[#a5c869]"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2"&gt;{person.dept}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-end justify-between mt-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;span className="block text-xl font-bold text-[#2f3f28]"&gt;{person.switcher}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;span className="block text-sm text-[#a5c869] font-medium"&gt;{person.avgDailyHours.toFixed(1)}h / day&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;div className="h-8 w-8 bg-white rounded-full flex items-center justify-center text-stone-300 shadow-sm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;Users size={16} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const DonutChart = ({ data, nameKey = "name", dataKey = "hours" }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="h-72 w-full mt-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;ResponsiveContainer width="100%" height="100%"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;PieChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Pie</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>data={data}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cx="50%"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>cy="50%"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>innerRadius={60}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>outerRadius={80}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>paddingAngle={5}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dataKey={dataKey}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>nameKey={nameKey}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{data.map((entry, index) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;Cell key={`cell-${index}`} fill={COLORS.chartPalette[index % COLORS.chartPalette.length]} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/Pie&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;RechartsTooltip<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>formatter={(value) =&gt; value.toFixed(1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Legend<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>layout="vertical"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>verticalAlign="middle"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>align="right"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>wrapperStyle={{ fontSize: '12px', fontFamily: 'DM Sans' }}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/PieChart&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/ResponsiveContainer&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const TaskTable = ({ data }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const [sortConfig, setSortConfig] = useState({ key: 'dateObj', direction: 'desc' });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const sortedData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let sortableItems = [...data];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (sortConfig.key !== null) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>sortableItems.sort((a, b) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let aValue = a[sortConfig.key];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let bValue = b[sortConfig.key];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>// Handle string comparison case-insensitive</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (typeof aValue === 'string') aValue = aValue.toLowerCase();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (typeof bValue === 'string') bValue = bValue.toLowerCase();</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (aValue &lt; bValue) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return sortConfig.direction === 'asc' ? -1 : 1;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (aValue &gt; bValue) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return sortConfig.direction === 'asc' ? 1 : -1;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return sortableItems;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}, [data, sortConfig]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const requestSort = (key) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let direction = 'asc';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (sortConfig.key === key &amp;&amp; sortConfig.direction === 'asc') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>direction = 'desc';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>setSortConfig({ key, direction });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const getSortIcon = (name) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (sortConfig.key !== name) return &lt;ArrowUpDown size={14} className="text-stone-300 ml-1 inline-block" /&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return &lt;ArrowUpDown size={14} className={`text-[#a5c869] ml-1 inline-block ${sortConfig.direction === 'asc' ? "rotate-180" : ""}`} /&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="overflow-x-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;table className="min-w-full text-left text-sm font-dm"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;thead className="bg-stone-50 border-b border-stone-100 text-[#2f3f28]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;tr&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;th<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; requestSort('dateObj')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center gap-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>Date {getSortIcon('dateObj')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/th&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;th<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; requestSort('client')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center gap-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>Client {getSortIcon('client')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/th&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;th<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; requestSort('task')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center gap-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>Task Details {getSortIcon('task')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/th&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;th<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className="px-4 py-3 font-bold text-right cursor-pointer hover:bg-stone-100 transition-colors group select-none"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; requestSort('minutes')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center justify-end gap-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>Hours {getSortIcon('minutes')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/th&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/tr&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/thead&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;tbody className="divide-y divide-stone-50"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{sortedData.map((item, i) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;tr key={i} className="hover:bg-stone-50/50 transition-colors"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;td className="px-4 py-3 text-stone-500 whitespace-nowrap"&gt;{item.dateStr}&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;td className="px-4 py-3 font-medium text-[#2f3f28]"&gt;{item.client}&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;td className="px-4 py-3 text-stone-600 max-w-xs truncate" title={item.task}&gt;{item.task}&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;td className="px-4 py-3 text-right font-medium text-[#a5c869]"&gt;{(item.minutes/60).toFixed(2)}&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/tr&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/tbody&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/table&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- View Components ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const DetailView = ({ title, type, data, onBack }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [timeframe, setTimeframe] = useState('day');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [trendMode, setTrendMode] = useState('total'); // 'total' or specific metric like 'client', 'switcher', 'department'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [selectedLines, setSelectedLines] = useState([]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Determine available breakdown options based on view type</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const breakdownOptions = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const options = ['total'];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (type === 'switcher') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>options.push('client');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else if (type === 'department') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>options.push('client', 'switcher');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else if (type === 'client') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>options.push('switcher', 'department');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return options;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [type]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Derive breakdown list items for multiselect</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const breakdownList = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMode === 'total') return [];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const getSortedKeys = (key) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const counts = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>data.forEach(d =&gt; counts[d[key]] = (counts[d[key]] || 0) + d.minutes);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return Object.entries(counts)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.sort((a,b) =&gt; b[1] - a[1])<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.map(e =&gt; e[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMode === 'client') return getSortedKeys('client');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMode === 'switcher') return getSortedKeys('switcher');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMode === 'department') return getSortedKeys('department');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data, trendMode]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Default selection when mode changes</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (breakdownList.length &gt; 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>setSelectedLines(breakdownList.slice(0, 3)); // Select top 3 by default</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [breakdownList]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// 1. Process Trend Data (Dynamic for MultiLine or Simple)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const trendData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const grouped = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>data.forEach(item =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!item.dateObj) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let key;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const d = item.dateObj;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Readable Key for X Axis</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (timeframe === 'day') key = `${d.getDate()}/${d.getMonth()+1}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (timeframe === 'week') key = `W${getWeekNumber(d)}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else key = d.toLocaleString('default', { month: 'short' });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!grouped[key]) grouped[key] = { name: key, label: key, hours: 0 };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Always calc total for SimpleChart</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>grouped[key].hours += item.minutes / 60;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Calc breakdown for MultiLine</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMode !== 'total') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>const entity = item[trendMode]; // e.g. item['client']</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>if (selectedLines.includes(entity)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>grouped[key][entity] = (grouped[key][entity] || 0) + item.minutes/60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return Object.values(grouped); // Return array</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data, timeframe, trendMode, selectedLines]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// 2. Process Allocations</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const clientAllocation = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const grouped = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>data.forEach(item =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const k = item.client || 'Unknown';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!grouped[k]) grouped[k] = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>grouped[k] += item.minutes / 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return Object.entries(grouped)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.map(([name, hours]) =&gt; ({ name, hours: parseFloat(hours.toFixed(1)) }))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.sort((a,b) =&gt; b.hours - a.hours);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data]);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const switcherSplit = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (type !== 'client') return [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const grouped = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>data.forEach(item =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const k = item.switcher || 'Unknown';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!grouped[k]) grouped[k] = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>grouped[k] += item.minutes / 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return Object.entries(grouped)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.map(([name, hours]) =&gt; ({ name, hours: parseFloat(hours.toFixed(1)) }))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.sort((a,b) =&gt; b.hours - a.hours);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data, type]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const secondaryAllocation = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const grouped = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const targetKey = type === 'department' ? 'switcher' : 'department';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>data.forEach(item =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const k = item[targetKey] || 'Unknown';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!grouped[k]) grouped[k] = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>grouped[k] += item.minutes / 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return Object.entries(grouped)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.map(([name, hours]) =&gt; ({ name, hours: parseFloat(hours.toFixed(1)) }))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.sort((a,b) =&gt; b.hours - a.hours);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data, type]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const totalHours = data.reduce((acc, curr) =&gt; acc + curr.minutes, 0) / 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const uniqueClients = new Set(data.map(d =&gt; d.client)).size;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const uniqueSwitchers = new Set(data.map(d =&gt; d.switcher)).size;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const uniqueTasks = data.length;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="animate-in fade-in slide-in-from-bottom-4 duration-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="flex justify-between items-center mb-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onClick={onBack}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className="flex items-center text-[#2f3f28] opacity-60 hover:opacity-100 transition-opacity font-medium"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;ChevronLeft size={18} className="mr-1" /&gt; Back to Dashboard</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;span className="font-playfair text-[#d2beff] text-lg capitalize"&gt;{type} Report&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;h1 className="text-4xl font-bold text-[#2f3f28] font-dm"&gt;{title}&lt;/h1&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="flex gap-4 mt-4 md:mt-0"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Card className="!p-4 !py-3 !bg-[#2f3f28] border-none"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span className="block text-xs opacity-80 font-dm text-white"&gt;Total Hours&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span className="block text-xl font-bold font-dm text-white"&gt;{totalHours.toFixed(1)}h&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;Card className="lg:col-span-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;h3 className="text-lg font-bold text-[#2f3f28]"&gt;Time Trends&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex flex-wrap items-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{/* Breakdown Toggles */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex bg-stone-100 p-1 rounded-lg"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{breakdownOptions.map(opt =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>key={opt}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; setTrendMode(opt)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-all ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>trendMode === opt ? 'bg-white shadow-sm text-[#2f3f28]' : 'text-stone-500'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{opt === 'total' ? 'Total' : `By ${opt}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>{trendMode !== 'total' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="h-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;MultiSelect<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>label={trendMode}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>options={breakdownList}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>selected={selectedLines}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>onChange={setSelectedLines}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;TimeFrameToggle current={timeframe} onChange={setTimeframe} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">          </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{trendMode === 'total' ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;SimpleTrendChart data={trendData} timeframe={timeframe} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;MultiLineTrendChart data={trendData} lines={selectedLines} timeframe={timeframe} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/Card&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="flex flex-col gap-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Card className="flex-1 flex flex-col justify-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{type === 'client' ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;DetailStat label="Active Switchers" value={uniqueSwitchers} sub="Team members assigned" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;DetailStat label="Active Clients" value={uniqueClients} sub="Distinct accounts serviced" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Card className="flex-1 flex flex-col justify-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;DetailStat label="Total Tasks" value={uniqueTasks} sub="Individual log entries" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;Card className="flex-1 flex flex-col justify-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;DetailStat label="Avg. Daily Hours" value={(totalHours / (trendData.length || 1)).toFixed(1)} sub="Based on selected range" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{type === 'client' ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Switcher Split&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;p className="font-playfair text-sm text-stone-400 mb-6"&gt;Hours logged by team members&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;AllocationChart data={switcherSplit} limit={10} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Client Allocation&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;p className="font-playfair text-sm text-stone-400 mb-6"&gt;Distribution of time across clients&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;AllocationChart data={clientAllocation} limit={10} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{type === 'switcher' ? (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;Card className="max-h-[25rem] overflow-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Task History&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;p className="font-playfair text-sm text-stone-400 mb-6"&gt;Complete log of tasks performed&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;TaskTable data={data} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>) : (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{type === 'department' ? 'Team Contribution' : 'Department Split'}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;p className="font-playfair text-sm text-stone-400 mb-6"&gt;Internal breakdown&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;DonutChart data={secondaryAllocation} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{type !== 'switcher' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;Card className="max-h-[35rem] overflow-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Task History&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;p className="font-playfair text-sm text-stone-400 mb-6"&gt;Complete log of tasks performed&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;TaskTable data={data} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const ListView = ({ title, items, onItemClick, icon: Icon, sortBy, onSortChange }) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const sortedItems = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return [...items].sort((a, b) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (sortBy === 'hours') return b.hours - a.hours;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return a.id.localeCompare(b.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [items, sortBy]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="animate-in fade-in duration-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="flex justify-between items-center mb-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;h2 className="text-3xl font-bold text-[#2f3f28] font-dm"&gt;{title}&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="flex bg-white rounded-lg border border-stone-200 p-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={() =&gt; onSortChange('alpha')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>className={`px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-1 transition-colors ${sortBy === 'alpha' ? 'bg-[#edf4ed] text-[#2f3f28]' : 'text-stone-400'}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>A-Z</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={() =&gt; onSortChange('hours')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>className={`px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-1 transition-colors ${sortBy === 'hours' ? 'bg-[#edf4ed] text-[#2f3f28]' : 'text-stone-400'}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;ArrowUpDown size={12} /&gt; Hours</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{sortedItems.map((item) =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;button<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>key={item.id}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onClick={() =&gt; onItemClick(item.id)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>className="group bg-white p-5 rounded-xl border border-stone-100 shadow-sm hover:shadow-md hover:border-[#a5c869] transition-all text-left flex items-center justify-between"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;div className="w-10 h-10 rounded-full bg-[#edf4ed] flex items-center justify-center text-[#2f3f28] group-hover:bg-[#a5c869] group-hover:text-white transition-colors"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;Icon size={20} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;h3 className="font-bold text-[#2f3f28] font-dm"&gt;{item.id}&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex gap-3 text-xs text-stone-500 font-dm mt-0.5"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span&gt;{item.count} tasks&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span&gt;•&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;span className="font-bold text-[#a5c869]"&gt;{item.hours.toFixed(1)} hrs&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;ArrowRight size={18} className="text-stone-300 group-hover:text-[#a5c869] transition-colors" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// --- Main App Logic ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">const App = () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [data, setData] = useState(null);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [view, setView] = useState({ type: 'dashboard', id: null });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [sortOrder, setSortOrder] = useState('alpha');<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Date Range State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [dateRange, setDateRange] = useState({ start: '', end: '' });</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Trend State</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [trendMetric, setTrendMetric] = useState('department');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [trendTimeframe, setTrendTimeframe] = useState('day');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const [selectedLines, setSelectedLines] = useState([]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleFileUpload = (event) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const file = event.target.files[0];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (file) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const reader = new FileReader();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>reader.onload = (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const parsedData = parseCSV(e.target.result);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Find min/max dates for default range</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (parsedData.length &gt; 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const dates = parsedData.map(d =&gt; d.dateObj.getTime());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const min = new Date(Math.min(...dates));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const max = new Date(Math.max(...dates));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Format to YYYY-MM-DD for input</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const toInputDate = (d) =&gt; d.toISOString().split('T')[0];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>setDateRange({ start: toInputDate(min), end: toInputDate(max) });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>setData(parsedData);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>reader.readAsText(file);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const handleNavigate = (type, id) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setView({ type: type + '_detail', id });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- FILTERING DATA BASED ON DATE RANGE ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const filteredData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!data) return null;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!dateRange.start || !dateRange.end) return data;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const start = new Date(dateRange.start);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const end = new Date(dateRange.end);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>end.setHours(23, 59, 59, 999); // Include full end day</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return data.filter(d =&gt; d.dateObj &gt;= start &amp;&amp; d.dateObj &lt;= end);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [data, dateRange]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Pre-calculate lists for the trend dropdown sorted by volume</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const entityLists = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>if(!filteredData) return { department: [], client: [], switcher: [], total: [] };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">     </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>const getSortedKeys = (key) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>const counts = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>filteredData.forEach(d =&gt; counts[d[key]] = (counts[d[key]] || 0) + d.minutes);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>return Object.entries(counts)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>.sort((a,b) =&gt; b[1] - a[1]) // Sort by hours desc</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>.map(e =&gt; e[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>return {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>total: ['Total Agency Hours'],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>department: getSortedKeys('department'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>client: getSortedKeys('client'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>switcher: getSortedKeys('switcher')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">     </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [filteredData]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Default selection when metric changes</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(entityLists[trendMetric] &amp;&amp; entityLists[trendMetric].length &gt; 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>setSelectedLines(entityLists[trendMetric].slice(0, 1)); // Default select first 1</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [trendMetric, entityLists]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Process Multi-line Trend Data ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const multiLineTrendData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(!filteredData) return [];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Group by timeframe</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const grouped = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>filteredData.forEach(item =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if(!item.dateObj) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let timeKey;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const d = item.dateObj;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Get readable key</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendTimeframe === 'day') timeKey = `${d.getDate()}/${d.getMonth()+1}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else if (trendTimeframe === 'week') timeKey = `W${getWeekNumber(d)}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>else timeKey = d.toLocaleString('default', { month: 'short' });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (!grouped[timeKey]) grouped[timeKey] = { name: timeKey };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (trendMetric === 'total') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>const key = 'Total Agency Hours';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>if (selectedLines.includes(key)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>grouped[timeKey][key] = (grouped[timeKey][key] || 0) + item.minutes/60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>const entity = item[trendMetric];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>if (selectedLines.includes(entity)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>grouped[timeKey][entity] = (grouped[timeKey][entity] || 0) + item.minutes/60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return Object.values(grouped);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [filteredData, trendMetric, trendTimeframe, selectedLines]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Derived Stats for Dashboard ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const stats = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!filteredData) return null;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const totalHours = filteredData.reduce((acc, curr) =&gt; acc + curr.minutes, 0) / 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const switchers = [...new Set(filteredData.map(d =&gt; d.switcher))];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const departments = [...new Set(filteredData.map(d =&gt; d.department))];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const clients = [...new Set(filteredData.map(d =&gt; d.client))];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Calculate date range for weekly average based on FILTERED data</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const dates = filteredData.map(d =&gt; d.dateObj).filter(Boolean);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const minDate = dates.length ? new Date(Math.min.apply(null, dates)) : new Date();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const maxDate = dates.length ? new Date(Math.max.apply(null, dates)) : new Date();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const dayDiff = Math.max(1, (maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1; // +1 inclusive</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const weeksDiff = Math.max(1, dayDiff / 7);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Top Clients (Avg Weekly Hours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const clientHours = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>filteredData.forEach(d =&gt; clientHours[d.client] = (clientHours[d.client] || 0) + d.minutes);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const topClients = Object.entries(clientHours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.map(([name, mins]) =&gt; ({ name, hours: parseFloat((mins/60 / weeksDiff).toFixed(1)) }))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.sort((a,b) =&gt; b.hours - a.hours);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Workload by Department</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const deptHours = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>filteredData.forEach(d =&gt; deptHours[d.department] = (deptHours[d.department] || 0) + d.minutes);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const deptWorkload = Object.entries(deptHours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.map(([name, mins]) =&gt; ({ name, hours: parseFloat((mins/60).toFixed(1)) }));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Workload by Switcher</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const switcherHours = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>filteredData.forEach(d =&gt; switcherHours[d.switcher] = (switcherHours[d.switcher] || 0) + d.minutes);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const switcherWorkload = Object.entries(switcherHours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.map(([name, mins]) =&gt; ({ name, hours: parseFloat((mins/60).toFixed(1)) }));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Top 6 Switchers Global (Avg Daily Hours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const switcherStats = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>filteredData.forEach(d =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>const sw = d.switcher;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>if (!switcherStats[sw]) switcherStats[sw] = { minutes: 0, days: new Set(), dept: d.department };</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>switcherStats[sw].minutes += d.minutes;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">       </span>if(d.dateStr) switcherStats[sw].days.add(d.dateStr);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const topSwitchers = Object.entries(switcherStats)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.map(([name, stat]) =&gt; ({<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>switcher: name,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>dept: stat.dept,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>totalHours: stat.minutes / 60,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>avgDailyHours: (stat.minutes / 60) / (stat.days.size || 1)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.sort((a,b) =&gt; b.totalHours - a.totalHours)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.slice(0, 6);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return {<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>totalHours,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>switcherCount: switchers.length,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>deptCount: departments.length,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>clientCount: clients.length,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>topClients,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>deptWorkload,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>switcherWorkload,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>topSwitchers</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [filteredData]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const listData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!filteredData) return {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const process = (key) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const stats = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>filteredData.forEach(d =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>if(!stats[d[key]]) stats[d[key]] = { count: 0, minutes: 0 };</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>stats[d[key]].count += 1;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>stats[d[key]].minutes += d.minutes;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return Object.entries(stats).map(([id, val]) =&gt; ({<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>id,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>count: val.count,<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>hours: val.minutes/60<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>switchers: process('switcher'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>departments: process('department'),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>clients: process('client')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [filteredData]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Filtering Data for Detail View ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const detailData = useMemo(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (!filteredData || view.type === 'dashboard' || !view.id) return [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (view.type === 'switcher_detail') return filteredData.filter(d =&gt; d.switcher === view.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (view.type === 'dept_detail') return filteredData.filter(d =&gt; d.department === view.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (view.type === 'client_detail') return filteredData.filter(d =&gt; d.client === view.id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}, [filteredData, view]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// --- Render Logic ---</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!data) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-[#edf4ed] flex flex-col items-center justify-center p-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;style&gt;{`</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.font-dm { font-family: 'DM Sans', sans-serif; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.font-playfair { font-family: 'Playfair Display', serif; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>`}&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="mb-12 animate-in fade-in zoom-in duration-700"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">           </span>&lt;LogoMain /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;Card className="max-w-md w-full text-center py-12 px-8 border-t-4 border-[#a5c869]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="w-16 h-16 bg-[#edf4ed] text-[#2f3f28] rounded-full flex items-center justify-center mx-auto mb-6"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Upload size={32} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;h1 className="text-2xl font-bold text-[#2f3f28] font-dm mb-3"&gt;Upload Timesheet&lt;/h1&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;p className="text-stone-500 mb-8 font-dm"&gt;Upload your Switch CSV timesheet to visualize performance metrics.&lt;/p&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">          </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;label className="block w-full cursor-pointer group"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="w-full bg-[#2f3f28] text-white py-4 rounded-xl font-bold font-dm transition-transform transform group-hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#2f3f28]/20 flex items-center justify-center gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;span&gt;Select CSV File&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div className="min-h-screen bg-[#edf4ed] flex font-dm text-[#2f3f28]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;style&gt;{`</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.font-dm { font-family: 'DM Sans', sans-serif; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.font-playfair { font-family: 'Playfair Display', serif; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>`}&lt;/style&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Sidebar */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;aside className="w-20 lg:w-64 bg-white border-r border-stone-100 flex-shrink-0 flex flex-col sticky top-0 h-screen z-10 transition-all"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-stone-50"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="hidden lg:block"&gt;&lt;LogoMain /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="lg:hidden"&gt;&lt;LogoSquare /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;nav className="p-4 space-y-2 flex-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>{[</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{ id: 'dashboard', label: 'Dashboard', icon: BarChart2 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{ id: 'switchers', label: 'Switchers', icon: Users },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{ id: 'departments', label: 'Departments', icon: Building2 },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{ id: 'clients', label: 'Clients', icon: Briefcase },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>].map(item =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;button</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>key={item.id}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>onClick={() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>setView({ type: item.id, id: null });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>view.type === item.id || view.type.startsWith(item.id.slice(0, -1)) // rough active match</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>? 'bg-[#edf4ed] text-[#2f3f28]'<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>: 'text-stone-500 hover:bg-stone-50 hover:text-[#2f3f28]'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>}`}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;item.icon size={20} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;span className="hidden lg:block"&gt;{item.label}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>{view.type === item.id &amp;&amp; &lt;div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#a5c869] hidden lg:block" /&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/nav&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{/* Global Date Filter in Sidebar */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="px-6 py-4 border-t border-stone-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center gap-2 mb-2 text-stone-400"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;CalendarIcon size={14} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;span className="text-xs font-bold uppercase tracking-wider"&gt;Date Range&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex flex-col gap-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;input<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>type="date"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>value={dateRange.start}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>onChange={(e) =&gt; setDateRange(prev =&gt; ({...prev, start: e.target.value}))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-[#a5c869] font-dm text-stone-600"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;input<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>type="date"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>value={dateRange.end}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>onChange={(e) =&gt; setDateRange(prev =&gt; ({...prev, end: e.target.value}))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-[#a5c869] font-dm text-stone-600"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div className="p-4 lg:p-6 border-t border-stone-50"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="flex items-center gap-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;div className="w-8 h-8 rounded-full bg-[#d2beff] flex items-center justify-center text-xs font-bold text-[#563f7a]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>S</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;div className="hidden lg:block"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;p className="text-sm font-bold text-[#2f3f28]"&gt;Switch Admin&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;button onClick={() =&gt; setData(null)} className="text-xs text-stone-400 hover:text-red-500"&gt;Change File&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">             </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/aside&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>{/* Main Content */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;main className="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{view.type === 'dashboard' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div className="animate-in fade-in slide-in-from-bottom-4 duration-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;span className="font-playfair text-[#d2beff] text-xl"&gt;Overview&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;h1 className="text-4xl font-bold text-[#2f3f28] mt-1"&gt;Company Performance&lt;/h1&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/header&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* KPI Cards */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;Card className="flex flex-row items-center gap-4 border-l-4 border-l-[#a5c869]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="p-3 bg-[#edf4ed] rounded-full text-[#a5c869]"&gt;&lt;Clock size={24} /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm"&gt;Total Hours&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                  </span>&lt;p className="text-2xl font-bold text-[#2f3f28] font-dm"&gt;{stats.totalHours.toFixed(0)}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;Card className="flex flex-row items-center gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="p-3 bg-stone-50 rounded-full text-[#2f3f28]"&gt;&lt;Users size={24} /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm"&gt;Active Switchers&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-2xl font-bold text-[#2f3f28] font-dm"&gt;{stats.switcherCount}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;Card className="flex flex-row items-center gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="p-3 bg-stone-50 rounded-full text-[#2f3f28]"&gt;&lt;Briefcase size={24} /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm"&gt;Active Clients&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-2xl font-bold text-[#2f3f28] font-dm"&gt;{stats.clientCount}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;Card className="flex flex-row items-center gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="p-3 bg-stone-50 rounded-full text-[#2f3f28]"&gt;&lt;Building2 size={24} /&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>{/* Reduced tracking and font size to prevent overflow */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-[10px] font-bold text-stone-400 uppercase tracking-wide font-dm"&gt;Departments&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;p className="text-2xl font-bold text-[#2f3f28] font-dm"&gt;{stats.deptCount}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Global Trend Row (Interactive Multi-line) */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;Card className="mb-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;h3 className="text-lg font-bold text-[#2f3f28]"&gt;Global Hours Trend&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;p className="text-stone-500 text-sm max-w-xl mt-1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                          </span>Compare performance trends over time. Select a category below to split the data.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;div className="flex flex-wrap gap-3 items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;div className="flex bg-stone-100 p-1 rounded-lg"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>&lt;button onClick={() =&gt; setTrendMetric('total')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'total' ? 'bg-white shadow-sm' : 'text-stone-500'}`}&gt;Total&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>&lt;button onClick={() =&gt; setTrendMetric('department')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'department' ? 'bg-white shadow-sm' : 'text-stone-500'}`}&gt;By Dept&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>&lt;button onClick={() =&gt; setTrendMetric('client')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'client' ? 'bg-white shadow-sm' : 'text-stone-500'}`}&gt;By Client&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>&lt;button onClick={() =&gt; setTrendMetric('switcher')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'switcher' ? 'bg-white shadow-sm' : 'text-stone-500'}`}&gt;By Switcher&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;div className="border-l border-stone-200 h-6 mx-1 hidden md:block"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;MultiSelect<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>label={trendMetric}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>options={entityLists[trendMetric]}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>selected={selectedLines}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                         </span>onChange={setSelectedLines}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>/&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>&lt;TimeFrameToggle current={trendTimeframe} onChange={setTrendTimeframe} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                   </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">               </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">               </span>&lt;MultiLineTrendChart data={multiLineTrendData} lines={selectedLines} timeframe={trendTimeframe} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/Card&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Top Clients Row */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;Card className="lg:col-span-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Client Workload&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;p className="font-playfair text-sm text-stone-400 mb-4"&gt;Average weekly hours logged per client&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;AllocationChart<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>data={stats.topClients}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>color={COLORS.primary}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>onClick={(clientId) =&gt; handleNavigate('client', clientId)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Top Switchers Grid */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="mb-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-4"&gt;Top 6 Switchers by Hours Logged&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;TopSwitchersGrid data={stats.topSwitchers} onNavigate={(id) =&gt; handleNavigate('switcher', id)} /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{/* Workload Row */}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div className="flex flex-col gap-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Department Workload&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;p className="font-playfair text-sm text-stone-400 mb-2"&gt;Total hours per department&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;VerticalBarChart<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>data={stats.deptWorkload}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>height={350}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>onClick={(id) =&gt; handleNavigate('dept', id)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h3 className="text-lg font-bold text-[#2f3f28] mb-1"&gt;Switcher Workload&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;p className="font-playfair text-sm text-stone-400 mb-2"&gt;Total hours per employee&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;VerticalBarChart<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>data={stats.switcherWorkload}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>height={350}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                      </span>onClick={(id) =&gt; handleNavigate('switcher', id)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                 </span>&lt;/Card&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{view.type === 'switchers' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;ListView<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>title="All Switchers"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>items={listData.switchers}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>icon={Users}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onItemClick={(id) =&gt; setView({ type: 'switcher_detail', id })}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>sortBy={sortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onSortChange={setSortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{view.type === 'departments' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;ListView<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>title="All Departments"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>items={listData.departments}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>icon={Building2}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onItemClick={(id) =&gt; setView({ type: 'dept_detail', id })}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>sortBy={sortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onSortChange={setSortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{view.type === 'clients' &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;ListView<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>title="All Clients"<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>items={listData.clients}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>icon={Briefcase}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onItemClick={(id) =&gt; setView({ type: 'client_detail', id })}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>sortBy={sortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onSortChange={setSortOrder}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{(view.type.endsWith('_detail')) &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;DetailView<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>title={view.id}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type={view.type.replace('_detail', '').replace('dept', 'department')} // Clean up type string</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>data={detailData}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>onBack={() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setView({ type: view.type.endsWith('client_detail') ? 'clients' : view.type.endsWith('dept_detail') ? 'departments' : 'switchers', id: null });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/main&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>);</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">export default App;</span></p>
+</body>
+</html>
