@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   Upload, Users, Briefcase, Building2, ChevronLeft, Clock, 
-  BarChart2, ArrowRight, Filter, ChevronDown, Check, X, ArrowUpDown, Calendar as CalendarIcon, Sparkles
+  BarChart2, ArrowRight, Filter, ChevronDown, Check, X, ArrowUpDown, Calendar as CalendarIcon, Sparkles, Settings, Loader2
 } from 'lucide-react';
 
 // --- Assets & Constants ---
@@ -105,7 +105,122 @@ const getWeekNumber = (d) => {
   return weekNo;
 };
 
+// --- API Service ---
+
+const callGemini = async (apiKey, prompt) => {
+    try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+            }),
+          }
+        );
+    
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error?.message || "API request failed");
+        }
+    
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text;
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        throw error;
+    }
+};
+
 // --- Components ---
+
+const SettingsModal = ({ isOpen, onClose, apiKey, setApiKey }) => {
+    const [inputKey, setInputKey] = useState(apiKey);
+
+    useEffect(() => {
+        setInputKey(apiKey);
+    }, [apiKey, isOpen]);
+
+    const handleSave = () => {
+        setApiKey(inputKey);
+        localStorage.setItem('switch_ai_key', inputKey);
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                <h3 className="text-xl font-bold text-[#2f3f28] font-dm mb-4">Settings</h3>
+                <div className="mb-6">
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Gemini API Key</label>
+                    <input 
+                        type="password"
+                        value={inputKey}
+                        onChange={(e) => setInputKey(e.target.value)}
+                        placeholder="Paste your AIza... key here"
+                        className="w-full p-3 border border-stone-200 rounded-xl focus:outline-none focus:border-[#a5c869] font-dm"
+                    />
+                    <p className="text-xs text-stone-400 mt-2">
+                        Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-[#a5c869] hover:underline">Google AI Studio</a>. 
+                        It is stored locally in your browser.
+                    </p>
+                </div>
+                <div className="flex justify-end gap-3">
+                    <button onClick={onClose} className="px-4 py-2 text-stone-500 hover:bg-stone-50 rounded-lg transition-colors font-dm">Cancel</button>
+                    <button onClick={handleSave} className="px-4 py-2 bg-[#2f3f28] text-white rounded-lg hover:bg-[#1a2416] transition-colors font-dm font-bold">Save Key</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AIInsightsModal = ({ isOpen, onClose, title, content, isLoading, error }) => {
+    if (!isOpen) return null;
+  
+    return (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="p-6 border-b border-stone-100 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+               <div className="bg-[#a5c869] text-white p-2 rounded-lg">
+                  <Sparkles size={20} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-bold text-[#2f3f28] font-dm">{title}</h3>
+                  <p className="text-xs text-stone-500 font-dm">AI Generated Analysis</p>
+               </div>
+            </div>
+            <button onClick={onClose} className="text-stone-400 hover:text-stone-600">
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="p-8 overflow-y-auto flex-1 font-dm text-[#2f3f28] leading-relaxed">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                 <Loader2 size={48} className="text-[#a5c869] animate-spin mb-4" />
+                 <p className="text-stone-500 font-medium">Analyzing data...</p>
+                 <p className="text-stone-400 text-sm mt-1">This may take a few seconds.</p>
+              </div>
+            ) : error ? (
+                <div className="text-center py-8">
+                    <p className="text-red-500 font-bold mb-2">Analysis Failed</p>
+                    <p className="text-stone-500 text-sm">{error}</p>
+                </div>
+            ) : (
+               <div 
+                 className="prose prose-stone max-w-none"
+                 dangerouslySetInnerHTML={{ __html: content }} 
+               />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+};
 
 const Card = ({ children, className = "", onClick }) => (
   <div 
@@ -599,10 +714,16 @@ const TaskTable = ({ data }) => {
 
 // --- View Components ---
 
-const DetailView = ({ title, type, data, onBack }) => {
+const DetailView = ({ title, type, data, onBack, apiKey, onOpenSettings }) => {
   const [timeframe, setTimeframe] = useState('day');
-  const [trendMode, setTrendMode] = useState('total'); // 'total' or specific metric like 'client', 'switcher', 'department'
+  const [trendMode, setTrendMode] = useState('total'); 
   const [selectedLines, setSelectedLines] = useState([]);
+  
+  // AI State
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   // Calculate detailed stats for the new banner
   const detailStats = useMemo(() => {
@@ -691,6 +812,53 @@ const DetailView = ({ title, type, data, onBack }) => {
       }
   }, [breakdownList]);
 
+  const handleGenerateReport = async () => {
+    if (!apiKey) {
+        onOpenSettings();
+        return;
+    }
+    
+    setIsAIModalOpen(true);
+    if(aiReport) return; // Cached
+    setIsAiLoading(true);
+    setAiError(null);
+
+    const summaryData = {
+        title,
+        type,
+        totalTasks: data.length,
+        totalHours: (data.reduce((acc, curr) => acc + curr.minutes, 0) / 60).toFixed(1),
+        // Aggregate for token efficiency
+        breakdown: Object.entries(data.reduce((acc, curr) => {
+            const k = type === 'client' ? curr.department : curr.client;
+            acc[k] = (acc[k] || 0) + curr.minutes;
+            return acc;
+        }, {})).map(([k, v]) => `${k}: ${(v/60).toFixed(1)}h`).join(', ')
+    };
+
+    const prompt = `
+        You are a senior data analyst at 'Switch', a marketing agency.
+        Analyze the following performance data for ${type}: "${title}".
+        
+        Data Summary:
+        ${JSON.stringify(summaryData)}
+
+        Please provide a concise, professional performance analysis formatted with simple HTML tags (<b>, <br>, <ul>, <li>).
+        Focus on:
+        1. <b>Key Focus Areas:</b> Where is the time being spent?
+        2. <b>Efficiency Observations:</b> Any patterns?
+        3. <b>Recommendations:</b> Quick tips for improvement or resource allocation.
+    `;
+
+    try {
+        const result = await callGemini(apiKey, prompt);
+        setAiReport(result || "No insights could be generated.");
+    } catch (e) {
+        setAiError("Failed to generate report. Please check your API key.");
+    }
+    setIsAiLoading(false);
+  };
+
   // 1. Process Trend Data (Dynamic for MultiLine or Simple)
   const trendData = useMemo(() => {
     const grouped = {};
@@ -761,12 +929,29 @@ const DetailView = ({ title, type, data, onBack }) => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <AIInsightsModal 
+        isOpen={isAIModalOpen} 
+        onClose={() => setIsAIModalOpen(false)} 
+        title={`${title} Analysis`} 
+        content={aiReport}
+        isLoading={isAiLoading}
+        error={aiError}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <button 
             onClick={onBack}
             className="flex items-center text-[#2f3f28] opacity-60 hover:opacity-100 transition-opacity font-medium"
         >
             <ChevronLeft size={18} className="mr-1" /> Back to Dashboard
+        </button>
+
+        <button 
+            onClick={handleGenerateReport}
+            className="bg-white border border-[#a5c869] text-[#2f3f28] px-4 py-2 rounded-xl font-bold font-dm hover:bg-[#a5c869] hover:text-white transition-all flex items-center gap-2 shadow-sm"
+        >
+            <Sparkles size={16} /> 
+            {apiKey ? "Analyze Performance" : "Enable AI Insights"}
         </button>
       </div>
 
@@ -791,11 +976,11 @@ const DetailView = ({ title, type, data, onBack }) => {
                         {title} has logged <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours across <span className="font-bold text-[#d2beff]">{detailStats.uniqueClients}</span> clients.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Completed <strong className="text-white">{detailStats.totalTasks}</strong> tasks with an average of <strong className="text-white">{detailStats.avgDaily.toFixed(1)}</strong> hours per day.</p>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Longest single task: <strong className="text-white">{detailStats.longestTask.task}</strong> ({ (detailStats.longestTask.minutes/60).toFixed(1) }h).</p>
                     </div>
                   </>
@@ -807,11 +992,11 @@ const DetailView = ({ title, type, data, onBack }) => {
                         {title} received <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours of service from <span className="font-bold text-[#d2beff]">{detailStats.uniqueSwitchers}</span> team members.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Top contributor: <strong className="text-white">{detailStats.topContributor.name}</strong> ({detailStats.topContributor.hours.toFixed(1)}h).</p>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Busiest day: <strong className="text-white">{detailStats.busiestDay.date}</strong> ({detailStats.busiestDay.hours.toFixed(1)}h logged).</p>
                     </div>
                   </>
@@ -823,12 +1008,12 @@ const DetailView = ({ title, type, data, onBack }) => {
                         The {title} team logged <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours with <span className="font-bold text-[#d2beff]">{detailStats.uniqueSwitchers}</span> active members.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Primary focus: <strong className="text-white">{detailStats.topContributor.name}</strong> ({(detailStats.topContributor.hours / detailStats.totalHours * 100).toFixed(0)}% of time).</p>
                     </div>
                     {/* Reuse switcher calculation for top member in dept */}
                     <div className="flex items-start gap-3">
-                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         {/* Changed label from "Top performing member" to "Highest hours logged" */}
                         <p>Highest hours logged: <strong className="text-white">{ 
                             Object.entries(data.reduce((acc, curr) => { acc[curr.switcher] = (acc[curr.switcher] || 0) + curr.minutes; return acc; }, {}))
@@ -998,6 +1183,14 @@ const App = () => {
   const [trendMetric, setTrendMetric] = useState('department');
   const [trendTimeframe, setTrendTimeframe] = useState('day');
   const [selectedLines, setSelectedLines] = useState([]);
+
+  // AI & Settings
+  const [apiKey, setApiKey] = useState(localStorage.getItem('switch_ai_key') || '');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -1199,6 +1392,49 @@ const App = () => {
     };
   }, [filteredData]);
 
+  // AI Dashboard Handler
+  const handleGenerateDashboardReport = async () => {
+    if (!apiKey) {
+        setIsSettingsOpen(true);
+        return;
+    }
+
+    setIsAIModalOpen(true);
+    if(aiReport) return; // Cached if not refreshed
+    setIsAiLoading(true);
+    setAiError(null);
+
+    // Simplify stats for prompt to save tokens
+    const simpleStats = {
+        totalHours: stats.totalHours.toFixed(0),
+        activeClients: stats.clientCount,
+        activeSwitchers: stats.switcherCount,
+        topClients: stats.topClients.slice(0, 5).map(c => `${c.name} (${c.hours}h/wk)`),
+        deptWorkload: stats.deptWorkload.map(d => `${d.name}: ${d.hours}h`),
+        topSwitchers: stats.topSwitchers.map(s => `${s.switcher} (${s.avgDailyHours.toFixed(1)}h/day)`)
+    };
+
+    const prompt = `
+        You are a strategic data analyst for 'Switch' Agency. 
+        Analyze the following high-level timesheet data:
+        ${JSON.stringify(simpleStats)}
+
+        Generate an Executive Summary formatted with HTML tags (<b>, <br>, <ul>, <li>).
+        Structure:
+        1. <b>Health Check:</b> Overall activity levels.
+        2. <b>Risk Assessment:</b> Identify potential burnout (high daily hours) or client over-dependency.
+        3. <b>Strategic Recommendations:</b> Resource allocation suggestions.
+    `;
+
+    try {
+        const result = await callGemini(apiKey, prompt);
+        setAiReport(result || "No insights could be generated.");
+    } catch (e) {
+        setAiError("Failed to generate report. Please check your API key.");
+    }
+    setIsAiLoading(false);
+  };
+
   const listData = useMemo(() => {
     if (!filteredData) return {};
     const process = (key) => {
@@ -1270,6 +1506,24 @@ const App = () => {
         .font-playfair { font-family: 'Playfair Display', serif; }
       `}</style>
 
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+      />
+      
+      {/* AI Report Modal */}
+      <AIInsightsModal 
+        isOpen={isAIModalOpen} 
+        onClose={() => setIsAIModalOpen(false)} 
+        title={view.type === 'dashboard' ? "Executive Summary" : `${view.id} Analysis`}
+        content={aiReport}
+        isLoading={isAiLoading}
+        error={aiError}
+      />
+
       {/* Sidebar */}
       <aside className="w-20 lg:w-64 bg-white border-r border-stone-100 flex-shrink-0 flex flex-col sticky top-0 h-screen z-10 transition-all">
         {/* Header with Logo and Text */}
@@ -1291,6 +1545,7 @@ const App = () => {
               key={item.id}
               onClick={() => {
                   setView({ type: item.id, id: null });
+                  setAiReport(null); // Clear report on navigation
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
                 view.type === item.id || view.type.startsWith(item.id.slice(0, -1)) // rough active match
@@ -1327,7 +1582,7 @@ const App = () => {
             </div>
         </div>
 
-        <div className="p-4 lg:p-6 border-t border-stone-50">
+        <div className="p-4 lg:p-6 border-t border-stone-50 flex items-center justify-between">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-full bg-[#edf4ed] flex items-center justify-center">
                  <div className="w-6 h-6"><LogoSquare /></div>
@@ -1337,11 +1592,14 @@ const App = () => {
                <button onClick={() => setData(null)} className="text-xs text-stone-400 hover:text-red-500">Change File</button>
              </div>
           </div>
+          <button onClick={() => setIsSettingsOpen(true)} className="text-stone-400 hover:text-[#2f3f28]">
+             <Settings size={20} />
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full relative">
         
         {view.type === 'dashboard' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1350,6 +1608,13 @@ const App = () => {
                  {/* Increased size for Overview title */}
                  <h1 className="text-5xl font-bold text-[#2f3f28] font-dm tracking-tight">Overview</h1>
               </div>
+              <button 
+                onClick={handleGenerateDashboardReport}
+                className="mt-4 md:mt-0 bg-white border border-[#a5c869] text-[#2f3f28] px-4 py-2 rounded-xl font-bold font-dm hover:bg-[#a5c869] hover:text-white transition-all flex items-center gap-2 shadow-sm"
+              >
+                <Sparkles size={16} /> 
+                {apiKey ? "Generate AI Report" : "Enable AI Insights"}
+              </button>
             </header>
 
             {/* KPI Banner - High Contrast with Gradient */}
@@ -1390,7 +1655,7 @@ const App = () => {
                    <div>
                       <h3 className="text-lg font-bold text-[#2f3f28]">Global Hours Trend</h3>
                       <p className="text-stone-500 text-sm max-w-xl mt-1">
-                          Compare performance trends over time. Select a category to split the data.
+                          Compare performance trends over time. Select a category below to split the data.
                       </p>
                    </div>
                    <div className="flex flex-wrap gap-3 items-center">
@@ -1512,6 +1777,8 @@ const App = () => {
             onBack={() => {
                 setView({ type: view.type.endsWith('client_detail') ? 'clients' : view.type.endsWith('dept_detail') ? 'departments' : 'switchers', id: null });
             }}
+            apiKey={apiKey}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
         )}
 
