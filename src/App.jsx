@@ -619,7 +619,7 @@ const ClientDistributionChart = ({ data }) => {
   );
 };
 
-const TaskTable = ({ data }) => {
+const TaskTable = ({ data, showContext = false }) => {
     const [sortConfig, setSortConfig] = useState({ key: 'dateObj', direction: 'desc' });
 
     const sortedData = useMemo(() => {
@@ -671,6 +671,26 @@ const TaskTable = ({ data }) => {
                                 Date {getSortIcon('dateObj')}
                             </div>
                         </th>
+                        {showContext && (
+                            <>
+                                <th 
+                                    className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"
+                                    onClick={() => requestSort('department')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Team {getSortIcon('department')}
+                                    </div>
+                                </th>
+                                <th 
+                                    className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"
+                                    onClick={() => requestSort('switcher')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Switcher {getSortIcon('switcher')}
+                                    </div>
+                                </th>
+                            </>
+                        )}
                         <th 
                             className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"
                             onClick={() => requestSort('client')}
@@ -701,6 +721,12 @@ const TaskTable = ({ data }) => {
                     {sortedData.map((item, i) => (
                         <tr key={i} className="hover:bg-stone-50/50 transition-colors">
                             <td className="px-4 py-3 text-stone-500 whitespace-nowrap">{item.dateStr}</td>
+                            {showContext && (
+                                <>
+                                    <td className="px-4 py-3 text-stone-600">{item.department}</td>
+                                    <td className="px-4 py-3 text-stone-600 font-medium">{item.switcher}</td>
+                                </>
+                            )}
                             <td className="px-4 py-3 font-medium text-[#2f3f28]">{item.client}</td>
                             <td className="px-4 py-3 text-stone-600 max-w-xs truncate" title={item.task}>{item.task}</td>
                             <td className="px-4 py-3 text-right font-medium text-[#a5c869]">{(item.minutes/60).toFixed(2)}</td>
@@ -1511,8 +1537,9 @@ const App = () => {
           .font-dm { font-family: 'DM Sans', sans-serif; }
           .font-playfair { font-family: 'Playfair Display', serif; }
         `}</style>
-        <div className="mb-12 animate-in fade-in zoom-in duration-700">
+        <div className="mb-12 animate-in fade-in zoom-in duration-700 flex flex-col items-center">
            <LogoMain />
+           <span className="text-[#a5c869] font-dm text-xs font-bold tracking-widest uppercase mt-3">Workload Dashboard</span>
         </div>
         
         <Card className="max-w-md w-full text-center py-12 px-8 border-t-4 border-[#a5c869]">
@@ -1811,7 +1838,7 @@ const App = () => {
                 <h2 className="text-3xl font-bold text-[#2f3f28] font-dm">Task Explorer</h2>
              </div>
              <Card>
-               <TaskTable data={filteredData || []} />
+               <TaskTable data={filteredData || []} showContext />
              </Card>
           </div>
         )}
