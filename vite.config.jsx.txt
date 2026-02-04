@@ -1,0 +1,10 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  // IMPORTANT: The base path must match your repository name for GitHub Pages to work.
+  // If your repo is https://github.com/username/switch-timesheet, base should be '/switch-timesheet/'
+  base: ‘/switch-timesheet/‘, 
+})
