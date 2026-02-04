@@ -44,7 +44,7 @@ const LogoMain = () => (
 );
 
 const LogoSquare = () => (
-  <svg viewBox="0 0 512 512" className="h-8 w-8">
+  <svg viewBox="0 0 512 512" className="w-full h-full">
     <path fill={COLORS.secondary} d="M292.53,210.27c-48.63-11-140.01-14.83-140.66-82.25-.57-59.05,63-73.68,110.32-64.14,60.69,12.24,99.76,67.11,121.62,121.05l26.22-8.65-18.96-136.11h-24.37c-1.28,11.59-2.81,24.9-17.63,24.38-12.43-.43-39.16-16.16-52.97-21.02-88.77-31.25-221.02,10.75-210.06,123.28,6.43,66.05,75.99,94.39,131.91,108.03,48.42,11.8,138.49,14.15,148.51,75.23,11.89,72.45-54.05,111.23-119.07,98.2-67.41-13.51-117.87-80.63-145.14-139.46l-26.25,8.84,24.46,154.33h25.27c.69-21.27,9.58-39.63,34.01-30.82,25.43,9.17,44.87,26.84,74.12,33.24,103.11,22.56,229.1-50.17,197.05-167.97-16.64-61.17-82.92-83.62-138.38-96.16Z"/>
   </svg>
 );
@@ -291,7 +291,7 @@ const SimpleTrendChart = ({ data, timeframe, color = COLORS.primary }) => {
   );
 };
 
-// Modified AllocationChart for Scrollable Clients
+// Modified AllocationChart for Scrollable Clients with larger labels
 const AllocationChart = ({ data, dataKey = "hours", nameKey = "name", color = null, limit = null, onClick }) => {
   const sortedData = [...data].sort((a, b) => b[dataKey] - a[dataKey]);
   const displayData = limit ? sortedData.slice(0, limit) : sortedData;
@@ -312,7 +312,8 @@ const AllocationChart = ({ data, dataKey = "hours", nameKey = "name", color = nu
               dataKey={nameKey} 
               type="category" 
               width={100} 
-              tick={{fontSize: 11, fill: '#444', fontFamily: 'DM Sans', cursor: onClick ? 'pointer' : 'default'}} 
+              // INCREASED FONT SIZE HERE
+              tick={{fontSize: 13, fill: '#444', fontFamily: 'DM Sans', cursor: onClick ? 'pointer' : 'default'}} 
               interval={0}
               onClick={(e) => onClick && onClick(e.value)}
             />
@@ -429,6 +430,73 @@ const DonutChart = ({ data, nameKey = "name", dataKey = "hours" }) => {
             verticalAlign="middle" 
             align="right"
             wrapperStyle={{ fontSize: '12px', fontFamily: 'DM Sans' }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+// Custom Pie Chart with Tooltip for Client Distribution
+const ClientDistributionChart = ({ data }) => {
+  // Sort and group data: Top 6 + Others
+  const processedData = useMemo(() => {
+    const sorted = [...data].sort((a, b) => b.hours - a.hours);
+    const top6 = sorted.slice(0, 6);
+    const others = sorted.slice(6);
+    
+    const result = [...top6];
+    if (others.length > 0) {
+      const othersHours = others.reduce((sum, item) => sum + item.hours, 0);
+      result.push({ name: 'Other Clients', hours: othersHours });
+    }
+    return result;
+  }, [data]);
+
+  const totalHours = processedData.reduce((sum, item) => sum + item.hours, 0);
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const dataPoint = payload[0].payload;
+      const percentage = totalHours > 0 ? ((dataPoint.hours / totalHours) * 100).toFixed(1) : 0;
+      
+      return (
+        <div className="bg-white p-3 border border-stone-100 shadow-lg rounded-xl">
+          <p className="font-bold text-[#2f3f28] text-sm mb-1">{dataPoint.name}</p>
+          <div className="text-xs text-stone-600 space-y-0.5">
+             <p>Hours: <span className="font-medium text-[#a5c869]">{dataPoint.hours.toFixed(1)}h</span></p>
+             <p>Share: <span className="font-medium text-[#a5c869]">{percentage}%</span></p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="h-72 w-full mt-4">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={processedData}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={80}
+            paddingAngle={2}
+            dataKey="hours"
+            nameKey="name"
+          >
+            {processedData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS.chartPalette[index % COLORS.chartPalette.length]} />
+            ))}
+          </Pie>
+          <RechartsTooltip content={<CustomTooltip />} />
+          <Legend 
+            layout="vertical" 
+            verticalAlign="middle" 
+            align="right"
+            wrapperStyle={{ fontSize: '11px', fontFamily: 'DM Sans' }} // removed maxWidth constraint
           />
         </PieChart>
       </ResponsiveContainer>
@@ -704,13 +772,14 @@ const DetailView = ({ title, type, data, onBack }) => {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-          <span className="font-playfair text-[#d2beff] text-lg capitalize">{type} Report</span>
+          {/* Renamed Department to Team */}
+          <span className="font-playfair text-[#d2beff] text-lg capitalize">{type === 'department' ? 'Team' : type} Report</span>
           <h1 className="text-4xl font-bold text-[#2f3f28] font-dm">{title}</h1>
         </div>
       </div>
 
       {/* New Detail Banner */}
-      <div className="bg-[#2f3f28] rounded-2xl p-8 mb-8 text-white shadow-lg relative overflow-hidden font-dm">
+      <div className="bg-gradient-to-br from-[#2f3f28] to-[#455a3f] rounded-2xl p-8 mb-8 text-white shadow-lg relative overflow-hidden font-dm">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-[#a5c869] rounded-full opacity-10 blur-2xl"></div>
           
           <h2 className="font-playfair text-2xl mb-4 relative z-10 text-[#a5c869]">Performance Summary</h2>
@@ -722,11 +791,11 @@ const DetailView = ({ title, type, data, onBack }) => {
                         {title} has logged <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours across <span className="font-bold text-[#d2beff]">{detailStats.uniqueClients}</span> clients.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Completed <strong className="text-white">{detailStats.totalTasks}</strong> tasks with an average of <strong className="text-white">{detailStats.avgDaily.toFixed(1)}</strong> hours per day.</p>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Longest single task: <strong className="text-white">{detailStats.longestTask.task}</strong> ({ (detailStats.longestTask.minutes/60).toFixed(1) }h).</p>
                     </div>
                   </>
@@ -738,11 +807,11 @@ const DetailView = ({ title, type, data, onBack }) => {
                         {title} received <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours of service from <span className="font-bold text-[#d2beff]">{detailStats.uniqueSwitchers}</span> team members.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Top contributor: <strong className="text-white">{detailStats.topContributor.name}</strong> ({detailStats.topContributor.hours.toFixed(1)}h).</p>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Busiest day: <strong className="text-white">{detailStats.busiestDay.date}</strong> ({detailStats.busiestDay.hours.toFixed(1)}h logged).</p>
                     </div>
                   </>
@@ -751,15 +820,16 @@ const DetailView = ({ title, type, data, onBack }) => {
               {type === 'department' && (
                   <>
                     <p className="text-lg leading-relaxed mb-2 md:col-span-2">
-                        The {title} department logged <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours with <span className="font-bold text-[#d2beff]">{detailStats.uniqueSwitchers}</span> active members.
+                        The {title} team logged <span className="font-bold text-[#d2beff]">{detailStats.totalHours.toFixed(1)}</span> hours with <span className="font-bold text-[#d2beff]">{detailStats.uniqueSwitchers}</span> active members.
                     </p>
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
                         <p>Primary focus: <strong className="text-white">{detailStats.topContributor.name}</strong> ({(detailStats.topContributor.hours / detailStats.totalHours * 100).toFixed(0)}% of time).</p>
                     </div>
                     {/* Reuse switcher calculation for top member in dept */}
                     <div className="flex items-start gap-3">
-                        <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
+                        <div className="mt-1.5 min-w-[4px] h-[4px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                        {/* Changed label from "Top performing member" to "Highest hours logged" */}
                         <p>Highest hours logged: <strong className="text-white">{ 
                             Object.entries(data.reduce((acc, curr) => { acc[curr.switcher] = (acc[curr.switcher] || 0) + curr.minutes; return acc; }, {}))
                             .sort((a,b) => b[1] - a[1])[0]?.[0] || '-' 
@@ -785,7 +855,7 @@ const DetailView = ({ title, type, data, onBack }) => {
                                 trendMode === opt ? 'bg-white shadow-sm text-[#2f3f28]' : 'text-stone-500'
                             }`}
                         >
-                            {opt === 'total' ? 'Total' : `By ${opt}`}
+                            {opt === 'total' ? 'Total' : `By ${opt === 'department' ? 'Team' : opt}`}
                         </button>
                     ))}
                 </div>
@@ -793,7 +863,7 @@ const DetailView = ({ title, type, data, onBack }) => {
                 {trendMode !== 'total' && (
                     <div className="h-8">
                         <MultiSelect 
-                            label={trendMode} 
+                            label={trendMode === 'department' ? 'team' : trendMode} 
                             options={breakdownList} 
                             selected={selectedLines}
                             onChange={setSelectedLines}
@@ -837,7 +907,8 @@ const DetailView = ({ title, type, data, onBack }) => {
         ) : (
             <Card>
                 <h3 className="text-lg font-bold text-[#2f3f28] mb-1">
-                    {type === 'department' ? 'Team Contribution' : 'Department Split'}
+                    {/* Changed title from Department Split to Team Contribution */}
+                    {type === 'department' ? 'Team Contribution' : 'Team Split'}
                 </h3>
                 <p className="font-playfair text-sm text-stone-400 mb-6">Internal breakdown</p>
                 <DonutChart data={secondaryAllocation} />
@@ -1105,6 +1176,10 @@ const App = () => {
     const topDept = sortedDepts[0];
     const topDeptShare = totalHours > 0 ? ((topDept.hours / totalHours) * 100).toFixed(0) : 0;
 
+    // Total Client Hours for Pie Chart (New)
+    const totalClientHours = Object.entries(clientHours)
+        .map(([name, mins]) => ({ name, hours: mins / 60 }));
+
     return { 
       totalHours, 
       switcherCount: switchers.length, 
@@ -1119,7 +1194,8 @@ const App = () => {
       top5ClientsNames, // Updated
       topDept,
       topDeptShare,
-      overworkedSwitchers // New
+      overworkedSwitchers, // New
+      totalClientHours // For Pie Chart
     };
   }, [filteredData]);
 
@@ -1196,16 +1272,19 @@ const App = () => {
 
       {/* Sidebar */}
       <aside className="w-20 lg:w-64 bg-white border-r border-stone-100 flex-shrink-0 flex flex-col sticky top-0 h-screen z-10 transition-all">
-        <div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-stone-50">
-          <div className="hidden lg:block"><LogoMain /></div>
-          <div className="lg:hidden"><LogoSquare /></div>
+        {/* Header with Logo and Text */}
+        <div className="flex flex-col justify-center items-center lg:items-start lg:px-8 py-6 border-b border-stone-50">
+            <div className="hidden lg:block mb-1"><LogoMain /></div>
+            <div className="lg:hidden"><LogoSquare /></div>
+            {/* Added mt-3 for spacing and lighter color */}
+            <span className="hidden lg:block text-[#a5c869] font-dm text-xs font-bold tracking-widest uppercase w-full mt-3">Workload Dashboard</span>
         </div>
 
         <nav className="p-4 space-y-2 flex-1">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
             { id: 'switchers', label: 'Switchers', icon: Users },
-            { id: 'departments', label: 'Departments', icon: Building2 },
+            { id: 'departments', label: 'Teams', icon: Building2 }, // Renamed to Teams
             { id: 'clients', label: 'Clients', icon: Briefcase },
           ].map(item => (
             <button
@@ -1250,8 +1329,8 @@ const App = () => {
 
         <div className="p-4 lg:p-6 border-t border-stone-50">
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-[#d2beff] flex items-center justify-center text-xs font-bold text-[#563f7a]">
-                S
+             <div className="w-10 h-10 rounded-full bg-[#edf4ed] flex items-center justify-center">
+                 <div className="w-6 h-6"><LogoSquare /></div>
              </div>
              <div className="hidden lg:block">
                <p className="text-sm font-bold text-[#2f3f28]">Switch Admin</p>
@@ -1268,37 +1347,37 @@ const App = () => {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
-                 {/* Increase size for Overview title to match page prominence */}
+                 {/* Increased size for Overview title */}
                  <h1 className="text-5xl font-bold text-[#2f3f28] font-dm tracking-tight">Overview</h1>
               </div>
             </header>
 
-            {/* KPI Banner - High Contrast */}
-            <div className="bg-[#2f3f28] rounded-2xl p-8 mb-10 text-white shadow-lg relative overflow-hidden font-dm">
+            {/* KPI Banner - High Contrast with Gradient */}
+            <div className="bg-gradient-to-br from-[#2f3f28] to-[#455a3f] rounded-2xl p-8 mb-10 text-white shadow-lg relative overflow-hidden font-dm">
               <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-[#a5c869] rounded-full opacity-10 blur-2xl"></div>
               
               <h2 className="font-playfair text-3xl mb-4 relative z-10 text-[#a5c869]">Let's deliver clarity.</h2>
               
               <p className="text-xl opacity-90 relative z-10 leading-relaxed max-w-4xl mb-6">
-                Switch has logged <span className="font-bold text-[#d2beff]">{stats.totalHours.toFixed(0)}</span> total hours across <span className="font-bold text-[#d2beff]">{stats.switcherCount}</span> Switchers, <span className="font-bold text-[#d2beff]">{stats.clientCount}</span> active clients, and <span className="font-bold text-[#d2beff]">{stats.deptCount}</span> departments.
+                Switch has logged <span className="font-bold text-[#d2beff]">{stats.totalHours.toFixed(0)}</span> total hours across <span className="font-bold text-[#d2beff]">{stats.switcherCount}</span> Switchers, <span className="font-bold text-[#d2beff]">{stats.clientCount}</span> active clients, and <span className="font-bold text-[#d2beff]">{stats.deptCount}</span> teams.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pt-6 border-t border-white/10 text-sm opacity-80">
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                      <p className="leading-snug">The top 5 clients by hours logged were <strong className="text-white">{stats.top5ClientsNames}</strong>.</p>
                   </div>
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
                      <p className="leading-snug">The 3 busiest Switchers were <strong className="text-white">{stats.top3Switchers}</strong>.</p>
                   </div>
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
-                     <p className="leading-snug">The <strong className="text-white">{stats.topDept.name}</strong> department carried <strong className="text-white">{stats.topDeptShare}%</strong> of the total workload.</p>
+                     <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <p className="leading-snug">The <strong className="text-white">{stats.topDept.name}</strong> team carried <strong className="text-white">{stats.topDeptShare}%</strong> of the total workload.</p>
                   </div>
                   {stats.overworkedSwitchers.length > 0 && (
                       <div className="flex items-start gap-3">
-                         <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-red-400 flex-shrink-0" />
+                         <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-red-400 flex-shrink-0" />
                          <p className="leading-snug">Attention: <strong className="text-white">{stats.overworkedSwitchers.join(', ')}</strong> are averaging more than 7 hours per day.</p>
                       </div>
                   )}
@@ -1311,13 +1390,13 @@ const App = () => {
                    <div>
                       <h3 className="text-lg font-bold text-[#2f3f28]">Global Hours Trend</h3>
                       <p className="text-stone-500 text-sm max-w-xl mt-1">
-                          Compare performance trends over time. Select a category below to split the data.
+                          Compare performance trends over time. Select a category to split the data.
                       </p>
                    </div>
                    <div className="flex flex-wrap gap-3 items-center">
                       <div className="flex bg-stone-100 p-1 rounded-lg">
                          <button onClick={() => setTrendMetric('total')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'total' ? 'bg-white shadow-sm' : 'text-stone-500'}`}>Total</button>
-                         <button onClick={() => setTrendMetric('department')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'department' ? 'bg-white shadow-sm' : 'text-stone-500'}`}>By Dept</button>
+                         <button onClick={() => setTrendMetric('department')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'department' ? 'bg-white shadow-sm' : 'text-stone-500'}`}>By Team</button>
                          <button onClick={() => setTrendMetric('client')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'client' ? 'bg-white shadow-sm' : 'text-stone-500'}`}>By Client</button>
                          <button onClick={() => setTrendMetric('switcher')} className={`px-3 py-1.5 text-xs font-medium rounded-md ${trendMetric === 'switcher' ? 'bg-white shadow-sm' : 'text-stone-500'}`}>By Switcher</button>
                       </div>
@@ -1338,9 +1417,10 @@ const App = () => {
                <MultiLineTrendChart data={multiLineTrendData} lines={selectedLines} timeframe={trendTimeframe} />
             </Card>
 
-            {/* Top Clients Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                 <Card className="lg:col-span-3">
+            {/* Client Charts Section */}
+            {/* Client Workload Bar Chart - Full Width Row */}
+            <div className="mb-8">
+                 <Card>
                     <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Client Workload</h3>
                     <p className="font-playfair text-sm text-stone-400 mb-4">Average weekly hours logged per client</p>
                     <AllocationChart 
@@ -1348,6 +1428,15 @@ const App = () => {
                       color={COLORS.primary} 
                       onClick={(clientId) => handleNavigate('client', clientId)}
                     />
+                 </Card>
+            </div>
+
+            {/* Client Distribution Pie Chart - Full Width Row */}
+            <div className="mb-8">
+                 <Card>
+                    <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Client Distribution</h3>
+                    <p className="font-playfair text-sm text-stone-400 mb-4">Share of total hours logged</p>
+                    <ClientDistributionChart data={stats.totalClientHours} />
                  </Card>
             </div>
 
@@ -1360,8 +1449,8 @@ const App = () => {
             {/* Workload Row */}
             <div className="flex flex-col gap-8">
                  <Card>
-                    <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Department Workload</h3>
-                    <p className="font-playfair text-sm text-stone-400 mb-2">Total hours per department</p>
+                    <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Team Workload</h3>
+                    <p className="font-playfair text-sm text-stone-400 mb-2">Total hours per team</p>
                     <VerticalBarChart 
                       data={stats.deptWorkload} 
                       height={350} 
@@ -1395,7 +1484,7 @@ const App = () => {
 
         {view.type === 'departments' && (
           <ListView 
-            title="All Departments" 
+            title="All Teams" 
             items={listData.departments} 
             icon={Building2}
             onItemClick={(id) => setView({ type: 'dept_detail', id })} 
