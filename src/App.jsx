@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   Upload, Users, Briefcase, Building2, ChevronLeft, Clock, 
-  BarChart2, ArrowRight, Filter, ChevronDown, Check, X, ArrowUpDown, Calendar as CalendarIcon, Sparkles, Settings, Loader2
+  BarChart2, ArrowRight, Filter, ChevronDown, Check, X, ArrowUpDown, Calendar as CalendarIcon, Sparkles, Settings, Loader2, Table, PieChart as PieChartIcon
 } from 'lucide-react';
 
 // --- Assets & Constants ---
@@ -527,7 +527,7 @@ const DonutChart = ({ data, nameKey = "name", dataKey = "hours" }) => {
             cx="50%"
             cy="50%"
             innerRadius={60}
-            outerRadius={80}
+            outerRadius={85}
             paddingAngle={5}
             dataKey={dataKey}
             nameKey={nameKey}
@@ -597,7 +597,7 @@ const ClientDistributionChart = ({ data }) => {
             cx="50%"
             cy="50%"
             innerRadius={60}
-            outerRadius={80}
+            outerRadius={90}
             paddingAngle={2}
             dataKey="hours"
             nameKey="name"
@@ -611,7 +611,7 @@ const ClientDistributionChart = ({ data }) => {
             layout="vertical" 
             verticalAlign="middle" 
             align="right"
-            wrapperStyle={{ fontSize: '11px', fontFamily: 'DM Sans' }} // removed maxWidth constraint
+            wrapperStyle={{ fontSize: '14px', fontFamily: 'DM Sans' }} // removed maxWidth constraint
           />
         </PieChart>
       </ResponsiveContainer>
@@ -718,6 +718,7 @@ const DetailView = ({ title, type, data, onBack, apiKey, onOpenSettings }) => {
   const [timeframe, setTimeframe] = useState('day');
   const [trendMode, setTrendMode] = useState('total'); 
   const [selectedLines, setSelectedLines] = useState([]);
+  const [allocationChartType, setAllocationChartType] = useState('bar'); // Toggle state for allocation chart
   
   // AI State
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -1068,45 +1069,79 @@ const DetailView = ({ title, type, data, onBack, apiKey, onOpenSettings }) => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {type === 'client' ? (
-            <Card>
-              <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Switcher Split</h3>
-              <p className="font-playfair text-sm text-stone-400 mb-6">Hours logged by team members</p>
-              <AllocationChart data={switcherSplit} limit={10} />
-            </Card>
-        ) : (
-            <Card>
-              <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Client Allocation</h3>
-              <p className="font-playfair text-sm text-stone-400 mb-6">Distribution of time across clients</p>
-              <AllocationChart data={clientAllocation} limit={10} />
-            </Card>
-        )}
-        
-        {type === 'switcher' ? (
-             <Card className="max-h-[25rem] overflow-auto">
-                 <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Task History</h3>
-                 <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
-                 <TaskTable data={data} />
+      {type === 'switcher' ? (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+             <Card>
+                <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Client Allocation</h3>
+                <p className="font-playfair text-sm text-stone-400 mb-6">Hours by Client (Bar)</p>
+                <AllocationChart data={clientAllocation} limit={10} />
              </Card>
-        ) : (
+             <Card>
+                <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Client Distribution</h3>
+                <p className="font-playfair text-sm text-stone-400 mb-6">Share of total hours (Pie)</p>
+                <ClientDistributionChart data={clientAllocation} />
+             </Card>
+          </div>
+          <Card className="max-h-[35rem] overflow-auto">
+             <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Task History</h3>
+             <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
+             <TaskTable data={data} />
+          </Card>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {type === 'client' ? (
+                <Card>
+                  <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Switcher Split</h3>
+                  <p className="font-playfair text-sm text-stone-400 mb-6">Hours logged by team members</p>
+                  <AllocationChart data={switcherSplit} limit={10} />
+                </Card>
+            ) : (
+                <Card>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-lg font-bold text-[#2f3f28]">Client Allocation</h3>
+                    <div className="flex bg-stone-100 p-1 rounded-lg">
+                      <button 
+                        onClick={() => setAllocationChartType('bar')}
+                        className={`p-1.5 rounded-md transition-all ${allocationChartType === 'bar' ? 'bg-white text-[#2f3f28] shadow-sm' : 'text-stone-400'}`}
+                      >
+                        <BarChart2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => setAllocationChartType('pie')}
+                        className={`p-1.5 rounded-md transition-all ${allocationChartType === 'pie' ? 'bg-white text-[#2f3f28] shadow-sm' : 'text-stone-400'}`}
+                      >
+                        <PieChartIcon size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="font-playfair text-sm text-stone-400 mb-6">Distribution of time across clients</p>
+                  
+                  {allocationChartType === 'bar' ? (
+                     <AllocationChart data={clientAllocation} limit={10} />
+                  ) : (
+                     <ClientDistributionChart data={clientAllocation} />
+                  )}
+                </Card>
+            )}
+            
             <Card>
                 <h3 className="text-lg font-bold text-[#2f3f28] mb-1">
-                    {/* Changed title from Department Split to Team Contribution */}
                     {type === 'department' ? 'Team Contribution' : 'Team Split'}
                 </h3>
                 <p className="font-playfair text-sm text-stone-400 mb-6">Internal breakdown</p>
                 <DonutChart data={secondaryAllocation} />
             </Card>
-        )}
-      </div>
-
-      {type !== 'switcher' && (
-        <Card className="max-h-[35rem] overflow-auto">
-             <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Task History</h3>
-             <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
-             <TaskTable data={data} />
-        </Card>
+          </div>
+          
+          <Card className="max-h-[35rem] overflow-auto">
+               <h3 className="text-lg font-bold text-[#2f3f28] mb-1">Task History</h3>
+               <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
+               <TaskTable data={data} />
+          </Card>
+        </>
       )}
 
     </div>
@@ -1180,7 +1215,7 @@ const App = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   
   // Trend State
-  const [trendMetric, setTrendMetric] = useState('department');
+  const [trendMetric, setTrendMetric] = useState('total'); // Changed default to 'total'
   const [trendTimeframe, setTrendTimeframe] = useState('day');
   const [selectedLines, setSelectedLines] = useState([]);
 
@@ -1540,6 +1575,7 @@ const App = () => {
             { id: 'switchers', label: 'Switchers', icon: Users },
             { id: 'departments', label: 'Teams', icon: Building2 }, // Renamed to Teams
             { id: 'clients', label: 'Clients', icon: Briefcase },
+            { id: 'tasks', label: 'Task Explorer', icon: Table },
           ].map(item => (
             <button
               key={item.id}
@@ -1767,6 +1803,17 @@ const App = () => {
             sortBy={sortOrder}
             onSortChange={setSortOrder}
           />
+        )}
+        
+        {view.type === 'tasks' && (
+          <div className="animate-in fade-in duration-500">
+             <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-[#2f3f28] font-dm">Task Explorer</h2>
+             </div>
+             <Card>
+               <TaskTable data={filteredData || []} />
+             </Card>
+          </div>
         )}
 
         {(view.type.endsWith('_detail')) && (
