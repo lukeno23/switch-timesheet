@@ -941,8 +941,13 @@ const App = () => {
             const min = new Date(Math.min(...dates));
             const max = new Date(Math.max(...dates));
             
-            // Format to YYYY-MM-DD for input
-            const toInputDate = (d) => d.toISOString().split('T')[0];
+            // Format to YYYY-MM-DD for input using local time to avoid timezone shifts
+            const toInputDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
             setDateRange({ start: toInputDate(min), end: toInputDate(max) });
         }
         
@@ -961,8 +966,12 @@ const App = () => {
       if (!data) return null;
       if (!dateRange.start || !dateRange.end) return data;
 
-      const start = new Date(dateRange.start);
-      const end = new Date(dateRange.end);
+      // Manually parse YYYY-MM-DD string to ensure local midnight creation
+      const [startYear, startMonth, startDay] = dateRange.start.split('-').map(Number);
+      const start = new Date(startYear, startMonth - 1, startDay);
+      
+      const [endYear, endMonth, endDay] = dateRange.end.split('-').map(Number);
+      const end = new Date(endYear, endMonth - 1, endDay);
       end.setHours(23, 59, 59, 999); // Include full end day
 
       return data.filter(d => d.dateObj >= start && d.dateObj <= end);
@@ -1259,7 +1268,8 @@ const App = () => {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
-                 <h1 className="text-4xl font-bold text-[#2f3f28] font-dm">Overview</h1>
+                 {/* Increase size for Overview title to match page prominence */}
+                 <h1 className="text-5xl font-bold text-[#2f3f28] font-dm tracking-tight">Overview</h1>
               </div>
             </header>
 
@@ -1275,21 +1285,21 @@ const App = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pt-6 border-t border-white/10 text-sm opacity-80">
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
-                     <p>The top 5 clients by hours logged were <strong className="text-white">{stats.top5ClientsNames}</strong>.</p>
+                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <p className="leading-snug">The top 5 clients by hours logged were <strong className="text-white">{stats.top5ClientsNames}</strong>.</p>
                   </div>
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
-                     <p>The 3 busiest Switchers were <strong className="text-white">{stats.top3Switchers}</strong>.</p>
+                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <p className="leading-snug">The 3 busiest Switchers were <strong className="text-white">{stats.top3Switchers}</strong>.</p>
                   </div>
                   <div className="flex items-start gap-3">
-                     <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-[#d2beff]" />
-                     <p>The <strong className="text-white">{stats.topDept.name}</strong> department carried <strong className="text-white">{stats.topDeptShare}%</strong> of the total workload.</p>
+                     <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-[#d2beff] flex-shrink-0" />
+                     <p className="leading-snug">The <strong className="text-white">{stats.topDept.name}</strong> department carried <strong className="text-white">{stats.topDeptShare}%</strong> of the total workload.</p>
                   </div>
                   {stats.overworkedSwitchers.length > 0 && (
                       <div className="flex items-start gap-3">
-                         <div className="mt-2 min-w-[4px] h-[4px] rounded-full bg-red-400" />
-                         <p>Attention: <strong className="text-white">{stats.overworkedSwitchers.join(', ')}</strong> are averaging more than 7 hours per day.</p>
+                         <div className="mt-2 min-w-[6px] h-[6px] rounded-full bg-red-400 flex-shrink-0" />
+                         <p className="leading-snug">Attention: <strong className="text-white">{stats.overworkedSwitchers.join(', ')}</strong> are averaging more than 7 hours per day.</p>
                       </div>
                   )}
               </div>
