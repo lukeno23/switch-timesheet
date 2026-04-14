@@ -45,7 +45,8 @@ Declared values (must be multiples of 4):
 
 Exceptions:
 - Touch targets for icon-only buttons: 44px minimum (accessibility requirement)
-- Inline `py-1.5` (6px) used in ToggleGroup and DropdownFilter — preserve this value; it is already in use throughout the codebase
+
+Note: `py-1.5` (6px) appears in ToggleGroup and DropdownFilter in the existing codebase and is preserved as-is during the refactor. It is not a declared spacing token and does not form part of this design contract. Do not introduce new usage of 6px spacing in Phase 1 work.
 
 ---
 
@@ -55,11 +56,13 @@ Exceptions:
 |------|------|--------|-------------|------|-------|
 | Body | 14px (text-sm) | 400 (regular) | 1.5 | DM Sans | Table rows, supporting text, dropdowns |
 | Label | 12px (text-xs) | 700 (bold) | 1.4 | DM Sans | Uppercase metadata, stat sub-values, section labels |
-| Heading | 20px (text-xl) | 700 (bold) | 1.2 | DM Sans | Modal titles, card headings, view titles |
-| Display | 32px (text-2xl / text-4xl) | 700 (bold) | 1.1 | DM Sans | Stat values (text-2xl), hero headings (text-4xl in detail views) |
+| Heading | 20px (text-xl) | 700 (bold) | 1.2 | DM Sans | Modal titles, card headings, view titles, stat values on dashboard cards |
+| Display | 36px (text-4xl) | 700 (bold) | 1.1 | DM Sans | Hero headings in detail views |
 | Accent | 14–20px | 400 (regular) | 1.4 | Playfair Display | Stat card labels, chart sub-labels, report section headings |
 
 Source: Measured from existing usage in `src/App.jsx` — StatCard uses text-2xl/text-xs/text-sm; modal headings use text-xl; detail view heading uses text-4xl.
+
+**Migration note:** Existing `text-2xl` (24px) on stat values is consolidated to `text-xl` (20px, Heading role) during the Phase 1 refactor. The visual change is minimal — 20px bold on a dashboard card reads clearly — and eliminates an undeclared fifth size. `text-4xl` is retained solely for the Display role (hero headings in detail views).
 
 **Phase 1 note:** `font-dm` and `font-playfair` must be extracted to `tailwind.config.js` under `theme.extend.fontFamily` (requirement QUAL-03). Class names remain unchanged; only the source of truth moves.
 
@@ -114,7 +117,7 @@ Proposed token map:
 |---------|------|
 | Password gate heading | "Switch Timesheet" |
 | Password gate subheading | "Enter your password to access the dashboard." |
-| Password gate CTA | "Sign in" |
+| Password gate CTA | "Sign in to Switch" |
 | Password gate error | "Incorrect password. Try again." |
 | Password gate input placeholder | "Password" |
 | Session expired / unauthenticated redirect | "Your session has ended. Please sign in again." |
@@ -136,6 +139,7 @@ Destructive actions in Phase 1: none. No delete, remove, or irreversible operati
 
 ### Password Gate (DASH-03)
 
+- Focal point: the password input field — it receives `autoFocus` on mount so the user can type immediately without clicking
 - Rendered as a full-screen centered layout matching the existing CSV upload screen pattern (logo + card)
 - Card: `bg-white rounded-2xl shadow-sm border border-stone-100 border-t-4 border-[#a5c869] p-8 max-w-md w-full`
 - Switch logo (`LogoMain`) displayed above the card with `mb-12`
