@@ -47,7 +47,14 @@ Plans:
   3. Each stored event has a classification_method field populated as "rule", "llm", or "misc"
   4. The Misc rate for a representative two-month dataset is below 2% (down from the current ~82 rule-unresolved entries)
   5. Client name aliases and typos (e.g. WRH, PP, FYO) resolve to canonical names in stored data
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Supabase schema, seed data, RLS, shared TypeScript types
+- [ ] 02-02-PLAN.md — Rule engine port (process_export.py), event filter, title parser, alias resolver
+- [ ] 02-03-PLAN.md — Google Calendar API auth, calendar fetcher, LLM classifier, audit pass, output validator
+- [ ] 02-04-PLAN.md — Sync Edge Function orchestrator and test fixtures
+- [ ] 02-05-PLAN.md — pg_cron schedule, CI update, schema push, end-to-end verification
 
 ### Phase 3: Dashboard + Admin
 **Goal**: Management can view live timesheet analytics and maintain reference data without touching code
@@ -69,6 +76,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/4 | Planning complete | - |
-| 2. Data Pipeline | 0/? | Not started | - |
+| 1. Foundation | 4/4 | Complete | - |
+| 2. Data Pipeline | 0/5 | Planning complete | - |
 | 3. Dashboard + Admin | 0/? | Not started | - |
