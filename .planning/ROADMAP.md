@@ -53,7 +53,7 @@ Plans:
 - [x] 02-01-PLAN.md — Supabase schema, seed data, RLS, shared TypeScript types
 - [x] 02-02-PLAN.md — Rule engine port (process_export.py), event filter, title parser, alias resolver
 - [x] 02-03-PLAN.md — Google Calendar API auth, calendar fetcher, LLM classifier, audit pass, output validator
-- [ ] 02-04-PLAN.md — Sync Edge Function orchestrator and test fixtures
+- [x] 02-04-PLAN.md — Sync Edge Function orchestrator and test fixtures
 - [ ] 02-05-PLAN.md — pg_cron schedule, CI update, schema push, end-to-end verification
 
 ### Phase 3: Dashboard + Admin
