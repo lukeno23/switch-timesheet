@@ -28,7 +28,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Visiting the app with a dev tools console shows zero XSS warnings and no unsafe HTML rendering
   4. App.jsx no longer exists as a monolith — components, hooks, utils, and services are in separate files
   5. Core logic (classification, CSV parsing, data aggregation) has test coverage that passes in CI
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Config, tooling, cleanup: Tailwind tokens, Vitest, dependencies, repo cleanup
+- [ ] 01-02-PLAN.md — Extract shared layer: constants, utils, services, hooks, shared components, ErrorBoundary, PasswordGate
+- [ ] 01-03-PLAN.md — Extract feature views, rewrite App.jsx as thin shell, wire auth and error boundaries
+- [ ] 01-04-PLAN.md — Unit tests for core utils, GitHub Actions CI, Vercel deployment prep
 **UI hint**: yes
 
 ### Phase 2: Data Pipeline
@@ -63,6 +69,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/4 | Planning complete | - |
 | 2. Data Pipeline | 0/? | Not started | - |
 | 3. Dashboard + Admin | 0/? | Not started | - |
