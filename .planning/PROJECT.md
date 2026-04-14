@@ -42,6 +42,8 @@ Accurate, automated visibility into how Switch's time is allocated across client
 - [ ] Clean up repo artifacts (app.jsx.scpt, vite.config backup files, .DS_Store)
 - [ ] Deploy frontend to Vercel (replace GitHub Pages)
 - [ ] File validation on data ingestion (size, format)
+- [ ] Client billing data input (manual entry per client/month or CSV upload)
+- [ ] Hours-to-billing analysis per client per month (hours spent, amount billed, effective hourly rate)
 
 ### Out of Scope
 

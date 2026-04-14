@@ -40,6 +40,11 @@ Requirements for milestone v1: retire the manual CSV workflow and deliver an aut
 - [ ] **DASH-04**: AI narrative reports (Gemini) invalidate correctly when date range changes
 - [ ] **DASH-05**: Frontend deployed to Vercel (replaces GitHub Pages)
 
+### Billing
+
+- [ ] **BILL-01**: Management users can input monthly billing amounts per client (manual entry per client/month or bulk CSV upload)
+- [ ] **BILL-02**: Dashboard shows hours-to-billing analysis per client per month (hours spent, amount billed, effective hourly rate, over/under-serviced indicators)
+
 ### Code Quality
 
 - [ ] **QUAL-01**: App.jsx refactored into modular component architecture (components, hooks, utils, services)
@@ -86,40 +91,42 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | — | Pending |
-| PIPE-02 | — | Pending |
-| PIPE-03 | — | Pending |
-| PIPE-04 | — | Pending |
-| PIPE-05 | — | Pending |
-| PIPE-06 | — | Pending |
-| CLAS-01 | — | Pending |
-| CLAS-02 | — | Pending |
-| CLAS-03 | — | Pending |
-| CLAS-04 | — | Pending |
-| CLAS-05 | — | Pending |
-| CLAS-06 | — | Pending |
-| ADMN-01 | — | Pending |
-| ADMN-02 | — | Pending |
-| ADMN-03 | — | Pending |
-| ADMN-04 | — | Pending |
-| DASH-01 | — | Pending |
-| DASH-02 | — | Pending |
-| DASH-03 | — | Pending |
-| DASH-04 | — | Pending |
-| DASH-05 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| QUAL-03 | — | Pending |
-| QUAL-04 | — | Pending |
-| QUAL-05 | — | Pending |
-| QUAL-06 | — | Pending |
-| QUAL-07 | — | Pending |
+| PIPE-01 | Phase 2 | Pending |
+| PIPE-02 | Phase 2 | Pending |
+| PIPE-03 | Phase 2 | Pending |
+| PIPE-04 | Phase 2 | Pending |
+| PIPE-05 | Phase 2 | Pending |
+| PIPE-06 | Phase 2 | Pending |
+| CLAS-01 | Phase 2 | Pending |
+| CLAS-02 | Phase 2 | Pending |
+| CLAS-03 | Phase 2 | Pending |
+| CLAS-04 | Phase 2 | Pending |
+| CLAS-05 | Phase 2 | Pending |
+| CLAS-06 | Phase 2 | Pending |
+| ADMN-01 | Phase 3 | Pending |
+| ADMN-02 | Phase 3 | Pending |
+| ADMN-03 | Phase 3 | Pending |
+| ADMN-04 | Phase 3 | Pending |
+| DASH-01 | Phase 3 | Pending |
+| DASH-02 | Phase 3 | Pending |
+| DASH-03 | Phase 1 | Pending |
+| DASH-04 | Phase 3 | Pending |
+| DASH-05 | Phase 1 | Pending |
+| QUAL-01 | Phase 1 | Pending |
+| QUAL-02 | Phase 1 | Pending |
+| QUAL-03 | Phase 1 | Pending |
+| QUAL-04 | Phase 1 | Pending |
+| QUAL-05 | Phase 1 | Pending |
+| QUAL-06 | Phase 1 | Pending |
+| QUAL-07 | Phase 1 | Pending |
+| BILL-01 | Phase 3 | Pending |
+| BILL-02 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 ⚠️
+- v1 requirements: 30 total
+- Mapped to phases: 30
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-14*
-*Last updated: 2026-04-14 after initial definition*
+*Last updated: 2026-04-14 after roadmap creation*
