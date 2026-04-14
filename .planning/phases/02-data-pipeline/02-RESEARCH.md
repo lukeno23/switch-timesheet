@@ -771,32 +771,32 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **CET vs CEST pg_cron scheduling**
    - What we know: Luke wants 5 AM CET. Malta observes CEST (UTC+2) in summer.
    - What's unclear: Should pg_cron be set to `0 4 * * *` (always 5 AM CET) or `0 3 * * *` for summer? Does Supabase pg_cron support timezone-aware cron expressions?
-   - Recommendation: Set `0 4 * * *` (04:00 UTC = 05:00 CET) as the default. Accept that in summer it runs at 06:00 CEST. The sync is nightly — 1 hour drift is acceptable. Document this for Luke.
+   - RESOLVED: Set `0 4 * * *` (04:00 UTC = 05:00 CET) as the default. Accept that in summer it runs at 06:00 CEST. The sync is nightly — 1 hour drift is acceptable. Document this for Luke. Adopted in Plan 05.
 
 2. **Manual sync authentication (D-18)**
    - What we know: Manual sync uses an HTTP endpoint with secret key authentication.
    - What's unclear: Should this use the Supabase service role key, or a separate custom secret header?
-   - Recommendation: Use a separate `SYNC_SECRET` env var checked in the Edge Function handler. Avoids exposing the service role key as a URL param.
+   - RESOLVED: Use a separate `SYNC_SECRET` env var checked in the Edge Function handler. Avoids exposing the service role key as a URL param. Adopted in Plan 04.
 
 3. **Client alias storage — DB table vs constants (D-02, Claude's Discretion)**
    - What we know: ~17 known aliases from instructions.md; Phase 3 admin UI will need to manage these.
    - What's unclear: Aliases in DB are live-editable (Phase 3 benefit); aliases in code are faster and simpler for Phase 2.
-   - Recommendation: **Separate `client_aliases` table** (see schema above). Phase 3 admin UI will CRUD this table directly. Edge Function queries it at sync time. Slightly more complex but eliminates a Phase 3 migration.
+   - RESOLVED: **Separate `client_aliases` table** (see schema above). Phase 3 admin UI will CRUD this table directly. Edge Function queries it at sync time. Slightly more complex but eliminates a Phase 3 migration. Adopted in Plan 01.
 
 4. **Batch size for LLM calls (Claude's Discretion)**
    - What we know: `classify_with_ai.py` uses 80 events/batch (worked well in testing). Edge Function has 150s timeout.
    - What's unclear: At 80 events/batch and ~5s/batch, 50 batches = 250s. During normal nightly sync only the ~2% unresolved events go to LLM — that's ~8 events max = 1 batch. Batch size only matters for backfill.
-   - Recommendation: Use **80 events/batch** for LLM fallback. For backfill, use the manual sync endpoint in multiple calls to stay under the 150s timeout.
+   - RESOLVED: Use **80 events/batch** for LLM fallback. For backfill, use the manual sync endpoint in multiple calls to stay under the 150s timeout. Adopted in Plan 03.
 
 5. **LLM audit pass sample percentage (Claude's Discretion)**
    - What we know: The audit pass reviews borderline events + a random sample of confident classifications (D-07, D-08).
    - What's unclear: What percentage of confident classifications to include in the audit sample.
-   - Recommendation: **10% of confident rule classifications** per sync run. At ~200 events/night and ~98% rule-classified, that's ~20 events. Combined with all borderline events (~4 at 2%), the audit reviews ~24 events — well within 1 API batch.
+   - RESOLVED: **10% of confident rule classifications** per sync run. At ~200 events/night and ~98% rule-classified, that's ~20 events. Combined with all borderline events (~4 at 2%), the audit reviews ~24 events — well within 1 API batch. Adopted in Plan 03.
 
 ---
 
