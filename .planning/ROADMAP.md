@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Config, tooling, cleanup: Tailwind tokens, Vitest, dependencies, repo cleanup
+- [x] 01-01-PLAN.md — Config, tooling, cleanup: Tailwind tokens, Vitest, dependencies, repo cleanup
 - [ ] 01-02-PLAN.md — Extract shared layer: constants, utils, services, hooks, shared components, ErrorBoundary, PasswordGate
 - [ ] 01-03-PLAN.md — Extract feature views, rewrite App.jsx as thin shell, wire auth and error boundaries
 - [ ] 01-04-PLAN.md — Unit tests for core utils, GitHub Actions CI, Vercel deployment prep
