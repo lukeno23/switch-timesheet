@@ -1,5 +1,6 @@
 export const parseCSV = (text) => {
   const lines = text.split('\n').filter(line => line.trim() !== '');
+  if (lines.length === 0) return []; // FIX: guard against empty/whitespace-only input
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
 
   return lines.slice(1).map(line => {
