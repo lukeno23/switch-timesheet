@@ -52,7 +52,7 @@ multiples of 4 (8-point grid via Tailwind's default `0.25rem = 4px` base):
 | 3xl | 64px (`p-16`) | Full-page-level centering (password gate pattern) |
 
 Exceptions:
-- Touch targets (admin table row action buttons): minimum 44px height (`py-2.5` + `text-sm` = ~40px; use `min-h-[44px]` explicitly on icon-only buttons)
+- Touch targets (admin table row action buttons): minimum 44px height (`py-2.5` + `text-sm` = ~40px; use `min-h-[44px]` explicitly on icon-only buttons) (WCAG 2.5.5 minimum; overrides 4-point grid as accessibility floor)
 - Sidebar nav items: `px-4 py-3` (12px + 16px = established pattern — do not change)
 - Scrollbar thumb: 6px (custom CSS, not spacing scale — frozen)
 
@@ -75,7 +75,7 @@ Notes:
 - 14px body is the existing norm in tables and modals (see `TaskDrilldownModal.jsx` `text-sm`)
 - 12px labels exactly match the existing form label pattern in `SettingsModal.jsx`
 - Do not introduce a 5th size. If a size is not listed here, use the nearest match.
-- Numeric values in stat cards use existing `text-4xl font-bold` (`StatCard.jsx`) — frozen, do not change.
+- Numeric values in stat cards use existing `text-4xl font-bold` (`StatCard.jsx`) — frozen, do not change. (pre-existing frozen — not counted against the 4-size limit)
 
 ---
 
@@ -153,7 +153,7 @@ text-stone-500 hover:bg-stone-50 hover:text-switch-secondary text-sm px-4 py-2 r
 
 ### Admin Table Pattern
 
-Each sub-section entity renders as a table inside a `Card` component.
+Each sub-section entity renders as a table inside a `Card` component. The entity table is the primary visual anchor of the Admin page — it is the largest element and the surface where all read, add, edit, and deactivate interactions occur.
 
 Table container: `Card` component (existing — `bg-white rounded-2xl shadow-sm border border-stone-100 p-6`)
 
@@ -196,7 +196,7 @@ Follows `SettingsModal.jsx` structure exactly. Differences for CRUD modals:
 Overlay: `fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4`
 Container: `bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200`
 Title: `text-xl font-bold text-switch-secondary font-dm mb-6`
-Close button: top-right `X` icon, `text-stone-400 hover:text-stone-600` (see `TaskDrilldownModal.jsx`)
+Close button: top-right `X` icon, `text-stone-400 hover:text-stone-600` (see `TaskDrilldownModal.jsx`); must include `aria-label="Close"` — neither `SettingsModal.jsx` nor `TaskDrilldownModal.jsx` currently carries this attribute, so the admin modal establishes this accessibility fix for all new modals going forward
 
 Form field group:
 ```
@@ -218,7 +218,7 @@ Form footer (bottom of modal):
 flex justify-end gap-3 pt-4 border-t border-stone-100 mt-6
 ```
 Cancel button: `px-4 py-2 text-stone-500 hover:bg-stone-50 rounded-lg transition-colors font-dm`
-Save/Confirm button (non-destructive): `px-4 py-2 bg-switch-secondary text-white rounded-lg hover:bg-switch-secondary-dark transition-colors font-dm font-bold`
+Save button (non-destructive) — label is entity-specific: `"Save Switcher"` / `"Save Client"` / `"Save Category"` / `"Save Entry"`, driven by the modal's entity prop: `px-4 py-2 bg-switch-secondary text-white rounded-lg hover:bg-switch-secondary-dark transition-colors font-dm font-bold`
 Deactivate/Delete button (destructive): `px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-dm font-bold`
 
 ### Aliases Nested List (inside Client modal)
@@ -398,7 +398,10 @@ py-8 text-center
 | Primary CTA — add category | "Add Category" | — |
 | Primary CTA — add billing entry | "Add Entry" | Tab context makes "billing" redundant |
 | Primary CTA — sync now | "Sync Now" | Imperative, short |
-| Save button (modal) | "Save" | Generic; context from modal title clarifies entity |
+| Save button (modal) — Switchers modal | "Save Switcher" | Entity-keyed; avoids generic "Save" |
+| Save button (modal) — Clients modal | "Save Client" | Entity-keyed |
+| Save button (modal) — Categories modal | "Save Category" | Entity-keyed |
+| Save button (modal) — Billing modal | "Save Entry" | Entity-keyed |
 | Deactivate confirmation | "Deactivate {Name}?" + body: "This {switcher/client/category} will be hidden from the sync and pickers. Existing historical data is preserved. You can reactivate it later." + button: "Deactivate" | Soft-delete is reversible — copy reflects that |
 | Delete billing entry confirmation | "Delete this entry?" + body: "This billing record will be permanently removed. This cannot be undone." + button: "Delete Entry" | Hard delete — copy must say "permanently" |
 | Deactivate warning (upcoming events) | "{Name} has {N} upcoming calendar events in the next 14 days. Deactivating will exclude them from the next sync. Are you sure?" | Server-side validation surfaces this; UI renders it in modal above action buttons |
@@ -515,6 +518,8 @@ No third-party registries. All new components are hand-rolled following existing
 | native `<input type="month">` | Claude's Discretion — simpler than custom picker for v1 |
 | Admin sub-section ordering | Claude's Discretion — Switchers/Clients/Categories/Billing/Sync (data entities first, operational last) |
 | Date range default (Jan 4 2026) | CONTEXT.md D-19/D-20: anchor date + full historical visibility |
+| Entity-keyed save button labels | Checker revision — generic "Save" blocked; replaced with Save Switcher / Save Client / Save Category / Save Entry |
+| aria-label="Close" on modal X button | Checker revision — accessibility fix; establishes pattern for new admin modals (no existing modal carries this attribute) |
 
 ---
 
