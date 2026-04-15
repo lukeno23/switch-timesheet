@@ -23,3 +23,5 @@ Thumbs.db
 
 # Data files with potential PII
 Other files/*.csv
+.vercel
+.secrets/
