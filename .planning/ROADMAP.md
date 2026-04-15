@@ -66,7 +66,16 @@ Plans:
   3. Changing the date range filter triggers a fresh AI narrative report — stale cached reports are no longer served
   4. A management user can add a new Switcher, client, or task category in the admin UI and the next nightly sync picks it up without a code deployment
   5. A management user can enter monthly billing data for a client and the dashboard shows hours-to-billing ratio for that client
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — DB migrations (client_billing, admin columns, anon RLS) + admin Edge Function with auth verifier
+- [ ] 03-02-PLAN.md — Supabase client, data hooks, row mapper, admin API wrapper, utility modules, PasswordGate hash store
+- [ ] 03-03-PLAN.md — Dashboard data source swap (CSV to Supabase), delete UploadView, Admin nav, last-synced footer, sync chip
+- [ ] 03-04-PLAN.md — Admin UI: AdminView tabs, AdminTable, AdminModal, all 5 entity tabs (Switchers/Clients/Categories/Billing/Sync)
+- [ ] 03-05-PLAN.md — AI report keyed cache fix (DASH-04) + unit tests for mapSupabaseRow, billingCalc, cacheKey, relativeTime
+- [ ] 03-06-PLAN.md — Billing analytics: EUR/hr column in Clients list, monthly billing series in client drilldown
+- [ ] 03-07-PLAN.md — Upcoming events collapsible sections (Dashboard/Switchers/Clients/Departments) + final Phase 3 UAT
 **UI hint**: yes
 
 ## Progress
@@ -77,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | - |
-| 2. Data Pipeline | 0/5 | Planning complete | - |
-| 3. Dashboard + Admin | 0/? | Not started | - |
+| 2. Data Pipeline | 5/5 | Complete | - |
+| 3. Dashboard + Admin | 0/7 | Planning complete | - |
