@@ -42,16 +42,14 @@ import type {
 function authenticateRequest(req: Request): Response | null {
   // Check for cron trigger: Authorization Bearer with service role key
   const authHeader = req.headers.get("authorization");
-  if (authHeader) {
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    if (authHeader === `Bearer ${serviceRoleKey}`) {
-      return null; // Authorized
-    }
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (authHeader && serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`) {
+    return null; // Authorized
   }
 
   // Check for manual trigger: x-sync-secret header
   const syncSecret = req.headers.get("x-sync-secret");
-  const expectedSecret = Deno.env.get("SYNC_SECRET") ?? "";
+  const expectedSecret = Deno.env.get("SYNC_SECRET");
   if (syncSecret && expectedSecret && syncSecret === expectedSecret) {
     return null; // Authorized
   }
