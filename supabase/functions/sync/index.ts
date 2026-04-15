@@ -586,6 +586,7 @@ Deno.serve(async (req: Request) => {
         );
 
         // Update events with LLM results
+        let llmResolved = 0;
         for (let i = 0; i < llmResults.length; i++) {
           const result = llmResults[i];
           const eventInfo = unresolvedEvents[i];
@@ -612,11 +613,12 @@ Deno.serve(async (req: Request) => {
               .eq("switcher_id", eventInfo.switcherId)
               .eq("google_event_id", eventInfo.parsed.google_event_id);
 
-            metrics.llm_classified++;
-            metrics.misc_count--; // No longer misc
+            llmResolved = llmResolved + 1;
           }
           // If not valid, the event stays as misc (already upserted)
         }
+        metrics.llm_classified = llmResolved;
+        metrics.misc_count = unresolvedEvents.length - llmResolved;
       } catch (error) {
         // LLM fallback failure is non-fatal -- events stay as misc
         console.error("LLM fallback error:", error);
