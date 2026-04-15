@@ -17,7 +17,11 @@ function base64urlEncode(data: string): string {
  * Base64url-encode a Uint8Array (for signature bytes).
  */
 function base64urlEncodeBytes(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes))
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
