@@ -235,6 +235,7 @@ export async function classifyWithLLM(
   validClients: string[],
   validDepartments: string[],
   switcherContext: Map<string, { dept: string; isManagement: boolean }>,
+  eventSwitcherNames?: Map<number, string>,
 ): Promise<
   Array<{
     row: number;
@@ -283,9 +284,8 @@ export async function classifyWithLLM(
     // Build user message for this batch
     const lines = batch.map((event, i) => {
       const rowNum = start + i;
-      // Look up Switcher context -- the event doesn't carry the Switcher name,
-      // so the caller must set it. We use the title and client fields available.
-      return `Row ${rowNum}: Title: "${event.title}", Task: "${event.task_details}", Client field: "${event.client_name_raw}"`;
+      const switcherName = eventSwitcherNames?.get(rowNum) ?? "Unknown";
+      return `Row ${rowNum}: Switcher: "${switcherName}", Title: "${event.title}", Task: "${event.task_details}", Client field: "${event.client_name_raw}"`;
     });
 
     const userMessage =

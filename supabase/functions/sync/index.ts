@@ -569,6 +569,12 @@ Deno.serve(async (req: Request) => {
         // Build ParsedEvent array with Switcher context for LLM
         const eventsForLLM = unresolvedEvents.map((e) => e.parsed);
 
+        // Build Switcher name map keyed by event index for LLM prompt context
+        const eventSwitcherNames = new Map<number, string>();
+        for (let i = 0; i < unresolvedEvents.length; i++) {
+          eventSwitcherNames.set(i, unresolvedEvents[i].switcherName);
+        }
+
         const llmResults = await classifyWithLLM(
           eventsForLLM,
           geminiApiKey,
@@ -576,6 +582,7 @@ Deno.serve(async (req: Request) => {
           ref.validClients,
           ref.validDepartments,
           ref.switcherContext,
+          eventSwitcherNames,
         );
 
         // Update events with LLM results
