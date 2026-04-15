@@ -354,6 +354,21 @@ Deno.serve(async (req: Request) => {
       // No body or invalid JSON -- use defaults
     }
 
+    // Validate backfill date format if provided
+    const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+    if (backfillStart && !DATE_REGEX.test(backfillStart)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid backfill_start format. Expected YYYY-MM-DD." }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (backfillEnd && !DATE_REGEX.test(backfillEnd)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid backfill_end format. Expected YYYY-MM-DD." }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     // --- C. Window calculation (D-14, D-15) ---
     const window = calculateSyncWindow(backfillStart, backfillEnd);
 
