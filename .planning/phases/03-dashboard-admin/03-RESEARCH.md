@@ -849,22 +849,25 @@ This is a Phase 2 fix that Phase 3 depends on. The planner should include it as 
 | A4 | Admin sync-now should route through admin Edge Function to keep SYNC_SECRET server-side | Sync Integration Notes | Low -- alternative is to add a separate "sync-trigger" Edge Function that accepts the admin auth hash |
 | A5 | Supabase embedded join syntax `switcher:switchers(name)` works with FK relationships defined in 0001_schema.sql | Pattern 2 | Low -- standard PostgREST behavior for FK relationships; verified in Context7 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Sync function "running" row write**
    - What we know: The sync function currently only writes sync_runs on completion, which fails due to free-tier timeout
    - What's unclear: Whether Phase 2 has already been modified to write a "running" row at the start
    - Recommendation: Planner should include a task to add "running" status write at sync start. This is a small change to `supabase/functions/sync/index.ts`.
+   - **RESOLVED** -- `supabase/functions/sync/index.ts` already writes `status: "running"` at line 391 before processing. No additional work needed.
 
 2. **Jan 4-31 historical backfill (D-20)**
    - What we know: Phase 2 backfilled from Feb 1, 2026. D-20 requires extending to Jan 4.
    - What's unclear: Whether the one-off backfill should be a migration task or a manual curl command
    - Recommendation: Include as a one-shot task in the plan. Use the existing manual sync endpoint with `backfillStart: '2026-01-04'` and `backfillEnd: '2026-01-31'`.
+   - **RESOLVED** -- Covered by Plan 01 Task 3 (manual backfill invocation via curl to sync Edge Function with `backfill_start: "2026-01-04"` and `backfill_end: "2026-01-31"`).
 
 3. **Supabase Edge Function invocation from admin Edge Function**
    - What we know: Admin Edge Function needs to trigger sync-now without exposing SYNC_SECRET to browser
    - What's unclear: Whether one Edge Function can call another on the same project via HTTP
    - Recommendation: Yes, it can. Use `fetch()` with the project URL + service role key. Both secrets are available in the Edge Function environment. [ASSUMED -- standard pattern but not verified for this specific project]
+   - **RESOLVED** -- Standard Supabase pattern. Admin Edge Function forwards to sync function via HTTPS with SYNC_SECRET header, same as the scheduled cron trigger. The admin `trigger-sync` action in Plan 01 Task 2 implements this routing.
 
 ## Environment Availability
 
