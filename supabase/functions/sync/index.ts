@@ -211,7 +211,7 @@ function parseCalendarEvent(
   }
 
   // Check zero-duration
-  if (startAt === endAt) {
+  if (isZeroDuration(startAt, endAt)) {
     return null;
   }
 

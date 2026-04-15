@@ -122,7 +122,7 @@ export function isAllDayEvent(event: GoogleCalendarEvent): boolean {
  * These are calendar placeholders and should be filtered.
  */
 export function isZeroDuration(startAt: string, endAt: string): boolean {
-  return startAt === endAt;
+  return new Date(startAt).getTime() === new Date(endAt).getTime();
 }
 
 /**
