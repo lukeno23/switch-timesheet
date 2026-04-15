@@ -513,17 +513,19 @@ Deno.serve(async (req: Request) => {
               ref.categoryNameToId,
             );
 
-            // Track for audit
-            if (classification.rule_confidence === "borderline") {
+            // Track for audit (only if we got a valid DB UUID back)
+            if (!eventId) {
+              console.error(`Upsert returned null for ${parsed.google_event_id} — skipping audit tracking`);
+            } else if (classification.rule_confidence === "borderline") {
               borderlineEvents.push({
-                eventId: eventId ?? parsed.google_event_id,
+                eventId,
                 parsed,
                 switcherName: switcher.name,
                 classification,
               });
             } else {
               confidentEvents.push({
-                eventId: eventId ?? parsed.google_event_id,
+                eventId,
                 parsed,
                 switcherName: switcher.name,
                 classification,
