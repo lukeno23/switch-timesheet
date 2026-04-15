@@ -25,6 +25,7 @@ export const PasswordGate = ({ onAuthenticated }) => {
       const expectedHash = import.meta.env.VITE_APP_PASSWORD_HASH;
       if (hash === expectedHash) {
         sessionStorage.setItem('switch_auth', 'true');
+        sessionStorage.setItem('switch_auth_hash', hash);
         onAuthenticated();
       } else {
         setError('Incorrect password. Try again.');
