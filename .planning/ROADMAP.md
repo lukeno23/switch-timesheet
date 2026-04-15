@@ -54,7 +54,7 @@ Plans:
 - [x] 02-02-PLAN.md — Rule engine port (process_export.py), event filter, title parser, alias resolver
 - [x] 02-03-PLAN.md — Google Calendar API auth, calendar fetcher, LLM classifier, audit pass, output validator
 - [x] 02-04-PLAN.md — Sync Edge Function orchestrator and test fixtures
-- [ ] 02-05-PLAN.md — pg_cron schedule, CI update, schema push, end-to-end verification
+- [x] 02-05-PLAN.md — pg_cron schedule, CI update, schema push, end-to-end verification
 
 ### Phase 3: Dashboard + Admin
 **Goal**: Management can view live timesheet analytics and maintain reference data without touching code
