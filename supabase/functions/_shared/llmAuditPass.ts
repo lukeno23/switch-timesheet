@@ -167,7 +167,11 @@ async function callGeminiAudit(
   }
 
   const text = parts[0].text;
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Gemini audit returned invalid JSON: ${text.slice(0, 200)}`);
+  }
 }
 
 // ============================================================

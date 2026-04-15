@@ -194,7 +194,11 @@ async function callGemini(
   }
 
   const text = parts[0].text;
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Gemini returned invalid JSON: ${text.slice(0, 200)}`);
+  }
 }
 
 // ============================================================
