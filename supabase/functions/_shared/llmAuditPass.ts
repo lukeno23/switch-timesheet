@@ -257,12 +257,19 @@ export async function auditRuleClassifications(
         responseSchema,
       );
 
-      for (let i = 0; i < rawResults.length; i++) {
-        const r = rawResults[i];
-        const event = batch[i] ?? batch[0]; // Fallback safety
-        const rowIdx = r.row ?? start + i;
-        const eventRef =
-          rowIdx < batch.length ? batch[rowIdx - start] : event;
+      // Build a lookup from the batch keyed by expected row numbers
+      const eventLookup = new Map<number, AuditInput>();
+      for (let i = 0; i < batch.length; i++) {
+        eventLookup.set(start + i, batch[i]);
+      }
+
+      for (const r of rawResults) {
+        const rowIdx = r.row ?? -1;
+        const eventRef = eventLookup.get(rowIdx);
+        if (!eventRef) {
+          // LLM returned an unrecognized row index -- skip this result
+          continue;
+        }
 
         if (r.agrees) {
           // LLM agrees with rule classification
