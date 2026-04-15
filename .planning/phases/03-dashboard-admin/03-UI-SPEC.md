@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: dashboard-admin
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-04-15
+reviewed_at: 2026-04-15T00:00:00Z
 ---
 
 # Phase 3 — UI Design Contract
