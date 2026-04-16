@@ -423,8 +423,8 @@ export const BillingTab = ({ billingData = [], clients = [], onDataChange }) => 
             className="w-full p-3 border border-stone-200 rounded-xl focus:outline-none focus:border-switch-primary font-dm text-sm"
           >
             <option value="">--</option>
-            <option value="Retainer">Retainer</option>
-            <option value="Project">Project</option>
+            <option value="retainer">Retainer</option>
+            <option value="project">Project</option>
           </select>
         </div>
 
