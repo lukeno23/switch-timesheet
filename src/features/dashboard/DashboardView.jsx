@@ -3,6 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { COLORS } from '../../constants/colors.js';
 import { getWeekNumber } from '../../shared/utils/getWeekNumber.js';
 import { callGemini } from '../../shared/services/gemini.js';
+import { buildCacheKey } from '../../shared/utils/cacheKey.js';
 import { Card } from '../../shared/components/Card.jsx';
 import { TimeFrameToggle } from '../../shared/components/TimeFrameToggle.jsx';
 import { MultiSelect } from '../../shared/components/MultiSelect.jsx';
@@ -14,20 +15,14 @@ import { VerticalBarChart } from './VerticalBarChart.jsx';
 import { TopSwitchersGrid } from './TopSwitchersGrid.jsx';
 import { ClientDistributionChart } from './ClientDistributionChart.jsx';
 
-export const DashboardView = ({ data, onNavigate, apiKey, onOpenSettings }) => {
+export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSettings }) => {
   const [trendMetric, setTrendMetric] = useState('total');
   const [trendTimeframe, setTrendTimeframe] = useState('day');
   const [selectedLines, setSelectedLines] = useState([]);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [aiReport, setAiReport] = useState(null);
+  const [aiCache, setAiCache] = useState({ key: null, report: null });
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
-
-  // AI cache invalidation: clear when data changes
-  useEffect(() => {
-    setAiReport(null);
-    setAiError(null);
-  }, [data]);
 
   // Derived stats for dashboard
   const stats = useMemo(() => {
@@ -177,8 +172,13 @@ export const DashboardView = ({ data, onNavigate, apiKey, onOpenSettings }) => {
       return;
     }
 
+    const currentKey = buildCacheKey(dateRange, null, null);
     setIsAIModalOpen(true);
-    if (aiReport) return;
+    if (aiCache.key === currentKey && aiCache.report) {
+      return; // Serve cached report
+    }
+    // Clear stale report
+    setAiCache({ key: null, report: null });
     setIsAiLoading(true);
     setAiError(null);
 
@@ -205,7 +205,8 @@ export const DashboardView = ({ data, onNavigate, apiKey, onOpenSettings }) => {
 
     try {
       const result = await callGemini(apiKey, prompt);
-      setAiReport(result || 'No insights could be generated.');
+      const report = result || 'No insights could be generated.';
+      setAiCache({ key: currentKey, report });
     } catch (e) {
       setAiError('Failed to generate report. Please check your API key.');
     }
@@ -226,7 +227,7 @@ export const DashboardView = ({ data, onNavigate, apiKey, onOpenSettings }) => {
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
         title="Executive Summary"
-        content={aiReport}
+        content={aiCache.report}
         isLoading={isAiLoading}
         error={aiError}
       />
