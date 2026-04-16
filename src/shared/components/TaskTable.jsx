@@ -153,6 +153,15 @@ export const TaskTable = ({ data, showContext = false, showOverride = false, onO
             </th>
             <th
               className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"
+              onClick={() => requestSort('categoryName')}
+            >
+              <div className="flex items-center gap-1">
+                Category {getSortIcon('categoryName')}
+                <FilterIcon col="categoryName" type="categorical" />
+              </div>
+            </th>
+            <th
+              className="px-4 py-3 font-bold cursor-pointer hover:bg-stone-100 transition-colors group select-none"
               onClick={() => requestSort('task')}
             >
               <div className="flex items-center gap-1">Task Details {getSortIcon('task')}</div>
@@ -176,6 +185,7 @@ export const TaskTable = ({ data, showContext = false, showOverride = false, onO
                 </>
               )}
               <td className="px-4 py-3 font-medium text-switch-secondary">{item.client}</td>
+              <td className="px-4 py-3 text-stone-500">{item.categoryName}</td>
               <td className="px-4 py-3 text-stone-600 max-w-xs truncate" title={item.task}>
                 {item.task}
               </td>

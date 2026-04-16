@@ -534,7 +534,7 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
           <Card className="max-h-[35rem] overflow-auto">
             <h3 className="text-lg font-bold text-switch-secondary mb-1">Task History</h3>
             <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
-            <TaskTable data={data} />
+            <TaskTable data={data} showContext />
           </Card>
         </>
       ) : (
@@ -618,7 +618,7 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
           <Card className="max-h-[35rem] overflow-auto">
             <h3 className="text-lg font-bold text-switch-secondary mb-1">Task History</h3>
             <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
-            <TaskTable data={data} />
+            <TaskTable data={data} showContext />
           </Card>
 
           {type === 'client' && (
