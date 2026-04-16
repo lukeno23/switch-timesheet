@@ -4,6 +4,7 @@ import { COLORS } from '../../constants/colors.js';
 import { getWeekNumber } from '../../shared/utils/getWeekNumber.js';
 import { callGemini } from '../../shared/services/gemini.js';
 import { buildCacheKey } from '../../shared/utils/cacheKey.js';
+import { calcEffectiveRate, calcOverUnderIndicator, formatCurrency, formatRawAmount } from '../../shared/utils/billingCalc.js';
 import { Card } from '../../shared/components/Card.jsx';
 import { TimeFrameToggle } from '../../shared/components/TimeFrameToggle.jsx';
 import { MultiSelect } from '../../shared/components/MultiSelect.jsx';
@@ -15,7 +16,7 @@ import { AllocationChart } from '../dashboard/AllocationChart.jsx';
 import { ClientDistributionChart } from '../dashboard/ClientDistributionChart.jsx';
 import { DonutChart } from '../dashboard/DonutChart.jsx';
 
-export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpenSettings }) => {
+export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpenSettings, billingData, clientId, clientTargetRate }) => {
   const [timeframe, setTimeframe] = useState('day');
   const [trendMode, setTrendMode] = useState('total');
   const [selectedLines, setSelectedLines] = useState([]);
@@ -228,6 +229,42 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
       .map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(1)) }))
       .sort((a, b) => b.hours - a.hours);
   }, [data, type]);
+
+  // Billing monthly series (client detail only)
+  const billingMonthly = useMemo(() => {
+    if (!billingData || !data || type !== 'client' || !clientId) return [];
+
+    // Group events by month for this client
+    const monthlyHours = {};
+    data.forEach(d => {
+      if (!d.dateObj) return;
+      const month = `${d.dateObj.getFullYear()}-${String(d.dateObj.getMonth() + 1).padStart(2, '0')}-01`;
+      monthlyHours[month] = (monthlyHours[month] || 0) + d.minutes / 60;
+    });
+
+    // Match billing entries for this client
+    const clientBilling = billingData.filter(b => b.client_id === clientId);
+
+    // Build series: for each month that has hours OR billing
+    const allMonths = new Set([...Object.keys(monthlyHours), ...clientBilling.map(b => b.year_month)]);
+    return Array.from(allMonths).sort().reverse().map(month => {
+      const hours = monthlyHours[month] || 0;
+      const billing = clientBilling.find(b => b.year_month === month);
+      const effectiveRate = billing ? calcEffectiveRate(hours, billing.eur_equivalent) : null;
+      const indicator = effectiveRate ? calcOverUnderIndicator(effectiveRate, clientTargetRate) : null;
+      const rawDisplay = billing ? formatRawAmount(billing.amount, billing.currency, billing.fx_rate_to_eur, billing.eur_equivalent) : null;
+
+      return {
+        month,
+        monthLabel: new Date(month).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+        hours: hours.toFixed(1),
+        billed: billing ? formatCurrency(billing.eur_equivalent, 'EUR') : '--',
+        effectiveRate: effectiveRate ? `\u20AC${effectiveRate.toFixed(2)}` : '--',
+        indicator,
+        rawDisplay,
+      };
+    });
+  }, [billingData, data, type, clientId, clientTargetRate]);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -474,6 +511,60 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
             <p className="font-playfair text-sm text-stone-400 mb-6">Complete log of tasks performed</p>
             <TaskTable data={data} />
           </Card>
+
+          {type === 'client' && (
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-switch-secondary font-dm mb-4">Billing Analysis</h3>
+              {billingMonthly.length > 0 ? (
+                <Card>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm font-dm">
+                      <thead>
+                        <tr className="text-xs font-bold uppercase tracking-wider text-stone-400 border-b border-stone-100">
+                          <th className="py-3 px-4 text-left">Month</th>
+                          <th className="py-3 px-4 text-right">Hours</th>
+                          <th className="py-3 px-4 text-right">Billed</th>
+                          <th className="py-3 px-4 text-right">{'\u20AC'}/hr</th>
+                          <th className="py-3 px-4 text-left">vs Target</th>
+                          <th className="py-3 px-4 text-left">Raw Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {billingMonthly.map(row => (
+                          <tr key={row.month} className="border-b border-stone-50">
+                            <td className="py-3 px-4 text-switch-secondary">{row.monthLabel}</td>
+                            <td className="py-3 px-4 text-right text-switch-secondary">{row.hours}</td>
+                            <td className="py-3 px-4 text-right font-bold text-switch-secondary">{row.billed}</td>
+                            <td className="py-3 px-4 text-right font-bold text-switch-primary">{row.effectiveRate}</td>
+                            <td className="py-3 px-4">
+                              {row.indicator && (
+                                <span className={`text-xs font-dm font-bold ${
+                                  row.indicator.status === 'over-serviced' ? 'text-red-500' :
+                                  row.indicator.status === 'under-serviced' ? 'text-switch-primary' :
+                                  'text-stone-400'
+                                }`}>
+                                  {row.indicator.status === 'over-serviced' ? `\u2193 ${row.indicator.label}` :
+                                   row.indicator.status === 'under-serviced' ? `\u2191 ${row.indicator.label}` :
+                                   `\u2248 ${row.indicator.label}`}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-stone-500 text-xs">{row.rawDisplay || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              ) : (
+                <Card>
+                  <div className="py-8 text-center">
+                    <p className="text-stone-400 text-sm font-dm">No billing data entered yet for this client.</p>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

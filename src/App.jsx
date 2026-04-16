@@ -18,11 +18,12 @@ import { DashboardView } from './features/dashboard/DashboardView.jsx';
 import { DetailView } from './features/detail/DetailView.jsx';
 import { useSupabaseData } from './shared/hooks/useSupabaseData.js';
 import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeTime.js';
+import { calcEffectiveRate } from './shared/utils/billingCalc.js';
 import { AdminView } from './features/admin/AdminView.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
-const ListView = ({ title, items, onItemClick, icon: Icon, sortBy, onSortChange }) => {
+const ListView = ({ title, items, onItemClick, icon: Icon, sortBy, onSortChange, renderExtra }) => {
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       if (sortBy === 'hours') return b.hours - a.hours;
@@ -67,6 +68,7 @@ const ListView = ({ title, items, onItemClick, icon: Icon, sortBy, onSortChange 
                   <span>{item.count} tasks</span>
                   <span>•</span>
                   <span className="font-bold text-switch-primary">{item.hours.toFixed(1)} hrs</span>
+                  {renderExtra && renderExtra(item)}
                 </div>
               </div>
             </div>
@@ -145,6 +147,27 @@ const AuthenticatedApp = () => {
       clients: process('client'),
     };
   }, [filteredData]);
+
+  // Enrich client list items with billing effective rate
+  const clientsWithBilling = useMemo(() => {
+    if (!listData?.clients || !billingData || !refData?.clients) return listData?.clients || [];
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+    return listData.clients.map(item => {
+      const clientRecord = refData.clients.find(c => c.name === item.id);
+      const billing = billingData.find(b => b.client_id === clientRecord?.id && b.year_month === currentMonth);
+      const hours = item.hours;
+      const effectiveRate = billing ? calcEffectiveRate(hours, billing.eur_equivalent) : null;
+
+      return {
+        ...item,
+        effectiveRate,
+        clientId: clientRecord?.id,
+        targetRate: clientRecord?.target_hourly_rate,
+      };
+    });
+  }, [listData, billingData, refData]);
 
   // Detail data for detail views
   const detailData = useMemo(() => {
@@ -327,11 +350,23 @@ const AuthenticatedApp = () => {
             {view.type === 'clients' && (
               <ListView
                 title="All Clients"
-                items={listData.clients || []}
+                items={clientsWithBilling}
                 icon={Briefcase}
                 onItemClick={(id) => setView({ type: 'client_detail', id })}
                 sortBy={sortOrder}
                 onSortChange={setSortOrder}
+                renderExtra={(item) => (
+                  <>
+                    <span className="text-stone-300 mx-0.5">|</span>
+                    {item.effectiveRate != null ? (
+                      <span className="text-switch-primary font-bold text-sm">
+                        {'\u20AC'}{item.effectiveRate.toFixed(2)}/hr
+                      </span>
+                    ) : (
+                      <span className="text-stone-400 text-sm">{'\u2014'}</span>
+                    )}
+                  </>
+                )}
               />
             )}
 
@@ -346,24 +381,32 @@ const AuthenticatedApp = () => {
               </div>
             )}
 
-            {view.type.endsWith('_detail') && (
-              <DetailView
-                title={view.id}
-                type={view.type.replace('_detail', '').replace('dept', 'department')}
-                data={detailData}
-                dateRange={dateRange}
-                onBack={() => {
-                  const backType = view.type.endsWith('client_detail')
-                    ? 'clients'
-                    : view.type.endsWith('dept_detail')
-                    ? 'departments'
-                    : 'switchers';
-                  setView({ type: backType, id: null });
-                }}
-                apiKey={apiKey}
-                onOpenSettings={() => setIsSettingsOpen(true)}
-              />
-            )}
+            {view.type.endsWith('_detail') && (() => {
+              const clientRecord = view.type === 'client_detail'
+                ? refData?.clients?.find(c => c.name === view.id)
+                : null;
+              return (
+                <DetailView
+                  title={view.id}
+                  type={view.type.replace('_detail', '').replace('dept', 'department')}
+                  data={detailData}
+                  dateRange={dateRange}
+                  onBack={() => {
+                    const backType = view.type.endsWith('client_detail')
+                      ? 'clients'
+                      : view.type.endsWith('dept_detail')
+                      ? 'departments'
+                      : 'switchers';
+                    setView({ type: backType, id: null });
+                  }}
+                  apiKey={apiKey}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  billingData={billingData}
+                  clientId={clientRecord?.id}
+                  clientTargetRate={clientRecord?.target_hourly_rate}
+                />
+              );
+            })()}
 
             {view.type === 'admin' && (
               <AdminView
