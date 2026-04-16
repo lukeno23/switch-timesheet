@@ -14,6 +14,7 @@ import { AllocationChart } from './AllocationChart.jsx';
 import { VerticalBarChart } from './VerticalBarChart.jsx';
 import { TopSwitchersGrid } from './TopSwitchersGrid.jsx';
 import { ClientDistributionChart } from './ClientDistributionChart.jsx';
+import { UpcomingEvents } from '../../shared/components/UpcomingEvents.jsx';
 
 export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSettings }) => {
   const [trendMetric, setTrendMetric] = useState('total');
@@ -397,6 +398,9 @@ export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSetti
           />
         </Card>
       </div>
+
+      {/* Upcoming Events */}
+      <UpcomingEvents events={data} />
     </div>
   );
 };

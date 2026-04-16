@@ -21,6 +21,7 @@ import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeT
 import { calcEffectiveRate } from './shared/utils/billingCalc.js';
 import { AdminView } from './features/admin/AdminView.jsx';
 import { CategoriesView } from './features/categories/CategoriesView.jsx';
+import { UpcomingEvents } from './shared/components/UpcomingEvents.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -337,48 +338,57 @@ const AuthenticatedApp = () => {
             )}
 
             {view.type === 'switchers' && (
-              <ListView
-                title="All Switchers"
-                items={listData.switchers || []}
-                icon={Users}
-                onItemClick={(id) => setView({ type: 'switcher_detail', id })}
-                sortBy={sortOrder}
-                onSortChange={setSortOrder}
-              />
+              <>
+                <ListView
+                  title="All Switchers"
+                  items={listData.switchers || []}
+                  icon={Users}
+                  onItemClick={(id) => setView({ type: 'switcher_detail', id })}
+                  sortBy={sortOrder}
+                  onSortChange={setSortOrder}
+                />
+                <UpcomingEvents events={data} />
+              </>
             )}
 
             {view.type === 'departments' && (
-              <ListView
-                title="All Teams"
-                items={listData.departments || []}
-                icon={Building2}
-                onItemClick={(id) => setView({ type: 'dept_detail', id })}
-                sortBy={sortOrder}
-                onSortChange={setSortOrder}
-              />
+              <>
+                <ListView
+                  title="All Teams"
+                  items={listData.departments || []}
+                  icon={Building2}
+                  onItemClick={(id) => setView({ type: 'dept_detail', id })}
+                  sortBy={sortOrder}
+                  onSortChange={setSortOrder}
+                />
+                <UpcomingEvents events={data} />
+              </>
             )}
 
             {view.type === 'clients' && (
-              <ListView
-                title="All Clients"
-                items={clientsWithBilling}
-                icon={Briefcase}
-                onItemClick={(id) => setView({ type: 'client_detail', id })}
-                sortBy={sortOrder}
-                onSortChange={setSortOrder}
-                renderExtra={(item) => (
-                  <>
-                    <span className="text-stone-300 mx-0.5">|</span>
-                    {item.effectiveRate != null ? (
-                      <span className="text-switch-primary font-bold text-sm">
-                        {'\u20AC'}{item.effectiveRate.toFixed(2)}/hr
-                      </span>
-                    ) : (
-                      <span className="text-stone-400 text-sm">{'\u2014'}</span>
-                    )}
-                  </>
-                )}
-              />
+              <>
+                <ListView
+                  title="All Clients"
+                  items={clientsWithBilling}
+                  icon={Briefcase}
+                  onItemClick={(id) => setView({ type: 'client_detail', id })}
+                  sortBy={sortOrder}
+                  onSortChange={setSortOrder}
+                  renderExtra={(item) => (
+                    <>
+                      <span className="text-stone-300 mx-0.5">|</span>
+                      {item.effectiveRate != null ? (
+                        <span className="text-switch-primary font-bold text-sm">
+                          {'\u20AC'}{item.effectiveRate.toFixed(2)}/hr
+                        </span>
+                      ) : (
+                        <span className="text-stone-400 text-sm">{'\u2014'}</span>
+                      )}
+                    </>
+                  )}
+                />
+                <UpcomingEvents events={data} />
+              </>
             )}
 
             {view.type === 'tasks' && (
@@ -422,26 +432,34 @@ const AuthenticatedApp = () => {
               const clientRecord = view.type === 'client_detail'
                 ? refData?.clients?.find(c => c.name === view.id)
                 : null;
+              const upcomingFilterKey = view.type === 'switcher_detail'
+                ? 'switcher'
+                : view.type === 'client_detail'
+                ? 'client'
+                : 'department';
               return (
-                <DetailView
-                  title={view.id}
-                  type={view.type.replace('_detail', '').replace('dept', 'department')}
-                  data={detailData}
-                  dateRange={dateRange}
-                  onBack={() => {
-                    const backType = view.type.endsWith('client_detail')
-                      ? 'clients'
-                      : view.type.endsWith('dept_detail')
-                      ? 'departments'
-                      : 'switchers';
-                    setView({ type: backType, id: null });
-                  }}
-                  apiKey={apiKey}
-                  onOpenSettings={() => setIsSettingsOpen(true)}
-                  billingData={billingData}
-                  clientId={clientRecord?.id}
-                  clientTargetRate={clientRecord?.target_hourly_rate}
-                />
+                <>
+                  <DetailView
+                    title={view.id}
+                    type={view.type.replace('_detail', '').replace('dept', 'department')}
+                    data={detailData}
+                    dateRange={dateRange}
+                    onBack={() => {
+                      const backType = view.type.endsWith('client_detail')
+                        ? 'clients'
+                        : view.type.endsWith('dept_detail')
+                        ? 'departments'
+                        : 'switchers';
+                      setView({ type: backType, id: null });
+                    }}
+                    apiKey={apiKey}
+                    onOpenSettings={() => setIsSettingsOpen(true)}
+                    billingData={billingData}
+                    clientId={clientRecord?.id}
+                    clientTargetRate={clientRecord?.target_hourly_rate}
+                  />
+                  <UpcomingEvents events={data} filterKey={upcomingFilterKey} filterValue={view.id} />
+                </>
               );
             })()}
 
