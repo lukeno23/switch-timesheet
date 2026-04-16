@@ -30,10 +30,10 @@ function jsonResponse(
 const ALLOWED_DEPARTMENTS = [
   "Brand",
   "Design",
-  "Digital",
-  "Film",
+  "Marketing",
+  "PM",
   "Management",
-  "Production",
+  "Cross-Department",
 ];
 
 // =============================================================

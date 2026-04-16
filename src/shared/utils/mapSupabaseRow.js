@@ -4,7 +4,7 @@ export const mapSupabaseRow = (row) => {
     // Properties consumed by existing useMemo aggregations (MUST match parseCSV output):
     switcher: row.switcher?.name || 'Unknown',
     client: row.client?.name || row.client_name_raw || 'Unknown',
-    department: row.category?.department || row.department || 'Unknown',
+    department: row.department || row.category?.department || 'Unknown',
     task: row.task_details || '',
     minutes: row.duration_minutes || 0,
     dateStr: `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
