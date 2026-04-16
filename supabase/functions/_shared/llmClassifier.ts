@@ -3,9 +3,70 @@
 // could not classify (D-06, CLAS-02). Uses structured output with
 // responseSchema to enforce valid JSON (Research Pattern 4).
 // API key read from Deno.env.get by the caller (T-02-07).
+// Override learning loop (D-24): recent user corrections injected as
+// LLM context so the model improves from manual overrides.
 
 import type { ParsedEvent } from "./types.ts";
 import { validateClassifications } from "./outputValidator.ts";
+import { supabaseAdmin } from "./supabaseClient.ts";
+
+// ============================================================
+// Override Learning Loop (D-24)
+// ============================================================
+
+/**
+ * Fetch recent user override corrections from audit_log to include
+ * as learning examples in the LLM classification prompt.
+ *
+ * Queries audit_log for 'classification_override' entries, then
+ * resolves human-readable client/category names from the events
+ * table via FK joins. Returns a formatted string to append to
+ * the system prompt, or empty string if no corrections exist.
+ *
+ * Called once per batch (not per event) to avoid N+1 queries.
+ *
+ * @param limit - Maximum number of recent corrections to include (default 30)
+ */
+async function fetchRecentCorrections(limit = 30): Promise<string> {
+  const { data: corrections, error } = await supabaseAdmin
+    .from("audit_log")
+    .select("entity_id, details, created_at")
+    .eq("action", "classification_override")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !corrections || corrections.length === 0) {
+    return "";
+  }
+
+  // For each correction, fetch the event's task_details and resolved
+  // client/category names via FK joins on override columns
+  const correctionLines: string[] = [];
+  for (const c of corrections) {
+    const { data: event } = await supabaseAdmin
+      .from("events")
+      .select(
+        "task_details, client_name_raw, override_client_id, override_category_id, override_department, client:clients!override_client_id(name), category:categories!override_category_id(name)",
+      )
+      .eq("id", c.entity_id)
+      .single();
+
+    if (event) {
+      const clientName =
+        (event.client as { name: string } | null)?.name ?? "Unknown";
+      const categoryName =
+        (event.category as { name: string } | null)?.name ?? "Unknown";
+      const department = event.override_department ?? "Unknown";
+      correctionLines.push(
+        `- Event "${event.task_details}" was corrected to: Client="${clientName}", Category="${categoryName}", Department="${department}"`,
+      );
+    }
+  }
+
+  if (correctionLines.length === 0) return "";
+
+  return `\n\nRecent corrections (learn from these — apply similar logic to similar events):\n${correctionLines.join("\n")}`;
+}
 
 // ============================================================
 // Constants
@@ -32,6 +93,7 @@ function buildSystemPrompt(
   validClients: string[],
   validDepartments: string[],
   switcherContext: Map<string, { dept: string; isManagement: boolean }>,
+  overrideContext: string = "",
 ): string {
   const switcherLines: string[] = [];
   for (const [name, ctx] of switcherContext.entries()) {
@@ -115,7 +177,7 @@ WRH -> Levaris, AD -> Alter Domus, FYO -> Fyorin, Fyrion -> Fyorin, Palazzo -> P
 - Named person-to-person meetings with no client = Non-Client Meeting
 - Meetings with named external people or prospects = Business Development
 
-Classify each event by assigning client, category, and department. Use the canonical names exactly as provided.`;
+Classify each event by assigning client, category, and department. Use the canonical names exactly as provided.${overrideContext}`;
 }
 
 // ============================================================
@@ -254,11 +316,16 @@ export async function classifyWithLLM(
     return [];
   }
 
+  // D-24: Fetch recent override corrections once per batch (not per event)
+  // so the LLM learns from user corrections
+  const overrideContext = await fetchRecentCorrections(30);
+
   const systemPrompt = buildSystemPrompt(
     validCategories,
     validClients,
     validDepartments,
     switcherContext,
+    overrideContext,
   );
 
   const responseSchema = buildResponseSchema(validCategories, validDepartments);
