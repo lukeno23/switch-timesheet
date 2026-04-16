@@ -2,7 +2,7 @@
 
 ## Overview
 
-Three phases retire the manual CSV workflow and deliver a fully automated timesheet analytics system. Phase 1 cleans the codebase and deploys to Vercel. Phase 2 builds the data pipeline — Supabase, Google Calendar API, and the hybrid classification engine. Phase 3 connects the dashboard to live data and gives management the admin controls to maintain reference data without code changes.
+Four phases retire the manual CSV workflow and deliver a fully automated timesheet analytics system. Phase 1 cleans the codebase and deploys to Vercel. Phase 2 builds the data pipeline — Supabase, Google Calendar API, and the hybrid classification engine. Phase 3 connects the dashboard to live data and gives management the admin controls to maintain reference data without code changes. Phase 4 polishes the analytics experience with richer drilldowns, interactive charts, calendar views, and pipeline classification improvements.
 
 ## Phases
 
@@ -15,6 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation** - Refactor, fix critical bugs, and deploy the frontend to Vercel with password protection
 - [ ] **Phase 2: Data Pipeline** - Supabase schema, Google Calendar API sync, and hybrid classification engine
 - [ ] **Phase 3: Dashboard + Admin** - Connect dashboard to live Supabase data, build admin UI for reference data management, and add client billing analytics
+- [ ] **Phase 4: Polish & Interactivity** - Richer drilldowns, interactive charts, calendar views, task table filtering, and classification pipeline improvements
 
 ## Phase Details
 
@@ -78,13 +79,38 @@ Plans:
 - [x] 03-07-PLAN.md — Upcoming events collapsible sections (Dashboard/Switchers/Clients/Departments) + final Phase 3 UAT
 **UI hint**: yes
 
+### Phase 4: Polish & Interactivity
+**Goal**: A more interactive, analytically rich dashboard with deeper drilldowns, clickable charts, calendar views, and improved classification accuracy
+**Depends on**: Phase 3
+**Requirements**: SC-04-01, SC-04-02, SC-04-03, SC-04-04, SC-04-05, SC-04-06, SC-04-07
+**Success Criteria** (what must be TRUE):
+  1. Category drilldowns show switcher breakdown, client distribution, and trend charts — not just an event table
+  2. A Task Explorer flat table is available alongside the Categories tab for quick event search/filtering
+  3. All task/event tables support column sorting and filtering
+  4. Clicking any chart bar, slice, or segment opens a floating modal showing the underlying events
+  5. Each Switcher has a calendar view showing their schedule in a Google Calendar-style layout
+  6. Switcher detail pages show category breakdown with per-client distribution
+  7. Additional data processing/classification rules from the user are applied to the sync pipeline
+**Plans:** 7 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Classification pipeline fixes: Internal catch-all rules, personal/internal boundary, declined meeting filter, Management dept restriction
+- [ ] 04-02-PLAN.md — Override schema + backend: DB migration, admin Edge Function save-override action, mapSupabaseRow override fields, adminApi wrapper
+- [ ] 04-03-PLAN.md — Schema push + shared UI components: ChartDrilldownModal, HistoricalUpcomingToggle, FilterDropdown, ClassificationOverridePanel, TaskDrilldownModal update
+- [ ] 04-04-PLAN.md — TaskTable column filtering upgrade + Task Explorer view
+- [ ] 04-05-PLAN.md — WeeklyCalendar 4-day upgrade + category drilldown analytics + Switcher calendar and per-client breakdown
+- [ ] 04-06-PLAN.md — App.jsx wiring: toggle state, Task Explorer nav, chart click handlers, UpcomingEvents removal
+- [ ] 04-07-PLAN.md — LLM override learning loop, sync override persistence guard, final Phase 4 verification checkpoint
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | - |
 | 2. Data Pipeline | 5/5 | Complete | - |
-| 3. Dashboard + Admin | 0/7 | Planning complete | - |
+| 3. Dashboard + Admin | 7/7 | Complete | - |
+| 4. Polish & Interactivity | 0/7 | Planning complete | - |
