@@ -2,19 +2,22 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   Users, Briefcase, Building2, ArrowRight, ArrowUpDown,
   BarChart2, Calendar as CalendarIcon, Settings, Table,
+  ShieldCheck,
 } from 'lucide-react';
 
 import { COLORS } from './constants/colors.js';
 import { LogoMain, LogoSquare } from './constants/logos.jsx';
-import { parseCSV } from './shared/utils/parseCSV.js';
 import { PasswordGate } from './shared/components/PasswordGate.jsx';
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
 import { SettingsModal } from './shared/components/SettingsModal.jsx';
 import { Card } from './shared/components/Card.jsx';
 import { TaskTable } from './shared/components/TaskTable.jsx';
-import { UploadView } from './features/upload/UploadView.jsx';
+import { SyncStatusChip } from './shared/components/SyncStatusChip.jsx';
+import { Toast } from './shared/components/Toast.jsx';
 import { DashboardView } from './features/dashboard/DashboardView.jsx';
 import { DetailView } from './features/detail/DetailView.jsx';
+import { useSupabaseData } from './shared/hooks/useSupabaseData.js';
+import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeTime.js';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -91,39 +94,19 @@ const App = () => {
 
 // Separate component to avoid hooks-after-conditional return issues
 const AuthenticatedApp = () => {
-  const [data, setData] = useState(null);
+  const { data, refData, billingData, latestSync, loading, error, refetch } = useSupabaseData();
   const [view, setView] = useState({ type: 'dashboard', id: null });
   const [sortOrder, setSortOrder] = useState('alpha');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('switch_ai_key') || '');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const handleFileUpload = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const parsedData = parseCSV(e.target.result);
-
-      if (parsedData.length > 0) {
-        // Use reduce instead of Math.min/max spread to avoid stack overflow on large arrays
-        const timestamps = parsedData.map(d => d.dateObj.getTime());
-        const minTs = timestamps.reduce((m, d) => d < m ? d : m, Infinity);
-        const maxTs = timestamps.reduce((m, d) => d > m ? d : m, -Infinity);
-        const min = new Date(minTs);
-        const max = new Date(maxTs);
-
-        const toInputDate = (d) => {
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        };
-        setDateRange({ start: toInputDate(min), end: toInputDate(max) });
-      }
-
-      setData(parsedData);
-    };
-    reader.readAsText(file);
-  };
+  // Set default date range when data loads
+  useEffect(() => {
+    if (data && data.length > 0 && !dateRange.start) {
+      setDateRange({ start: '2026-01-04', end: new Date().toISOString().split('T')[0] });
+    }
+  }, [data]);
 
   const handleNavigate = (type, id) => {
     setView({ type: type + '_detail', id });
@@ -171,8 +154,43 @@ const AuthenticatedApp = () => {
     return [];
   }, [filteredData, view]);
 
-  if (!data) {
-    return <UploadView onFileUpload={handleFileUpload} />;
+  if (loading) {
+    return (
+      <div className="p-8 space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3].map(i => <div key={i} className="w-full h-24 animate-pulse bg-stone-100 rounded-2xl" />)}
+        </div>
+        {[1,2,3,4].map(i => <div key={i} className="h-10 animate-pulse bg-stone-50 rounded-lg w-full mb-2" />)}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full p-16">
+        <div className="text-center">
+          <p className="text-red-500 text-sm font-dm mb-4">Couldn't load timesheet data. Check your connection and try refreshing.</p>
+          <button onClick={refetch} className="px-4 py-2 bg-switch-secondary text-white rounded-lg hover:bg-switch-secondary-dark transition-colors font-dm font-bold">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full p-16">
+        <Card className="text-center max-w-md p-8">
+          <CalendarIcon size={48} className="text-stone-300 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-switch-secondary font-dm mb-2">No timesheet data yet</h3>
+          <p className="text-sm text-stone-500 font-dm mb-6">The nightly sync hasn't run yet. Head to Admin &gt; Sync to trigger a manual sync.</p>
+          <button onClick={() => setView({ type: 'admin', adminTab: 'sync' })} className="px-4 py-2 bg-switch-secondary text-white rounded-lg hover:bg-switch-secondary-dark transition-colors font-dm font-bold">
+            Go to Sync
+          </button>
+        </Card>
+      </div>
+    );
   }
 
   const navItems = [
@@ -181,6 +199,7 @@ const AuthenticatedApp = () => {
     { id: 'departments', label: 'Teams', icon: Building2 },
     { id: 'clients', label: 'Clients', icon: Briefcase },
     { id: 'tasks', label: 'Task Explorer', icon: Table },
+    { id: 'admin', label: 'Admin', icon: ShieldCheck },
   ];
 
   return (
@@ -252,15 +271,20 @@ const AuthenticatedApp = () => {
                 <div className="w-6 h-6"><LogoSquare /></div>
               </div>
               <div className="hidden lg:block">
-                <p className="text-sm font-bold text-switch-secondary">Switch Admin</p>
-                <button onClick={() => setData(null)} className="text-xs text-stone-400 hover:text-red-500">
-                  Change File
-                </button>
+                <p className="text-sm font-bold text-switch-secondary font-dm">Switch Admin</p>
+                <p className="text-xs text-stone-400 font-dm" title={latestSync ? formatAbsoluteTime(latestSync.started_at) : ''}>
+                  Last synced: <span className="font-bold text-switch-secondary">{latestSync ? formatRelativeTime(latestSync.started_at) : 'Never'}</span>
+                </p>
               </div>
             </div>
-            <button onClick={() => setIsSettingsOpen(true)} className="text-stone-400 hover:text-switch-secondary">
-              <Settings size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              {latestSync?.errors && Object.keys(latestSync.errors).length > 0 && (
+                <SyncStatusChip onClick={() => setView({ type: 'admin', adminTab: 'sync' })} />
+              )}
+              <button onClick={() => setIsSettingsOpen(true)} className="text-stone-400 hover:text-switch-secondary">
+                <Settings size={20} />
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -336,6 +360,15 @@ const AuthenticatedApp = () => {
                 apiKey={apiKey}
                 onOpenSettings={() => setIsSettingsOpen(true)}
               />
+            )}
+
+            {view.type === 'admin' && (
+              <div className="animate-in fade-in duration-500">
+                <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-6">Admin</h2>
+                <Card>
+                  <p className="text-sm text-stone-500 font-dm">Admin panel will be available after Plan 04 ships.</p>
+                </Card>
+              </div>
             )}
           </ErrorBoundary>
         </main>
