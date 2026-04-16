@@ -69,8 +69,8 @@ Plans:
 **Plans:** 7 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — DB migrations (client_billing, admin columns, anon RLS) + admin Edge Function with auth verifier
-- [ ] 03-02-PLAN.md — Supabase client, data hooks, row mapper, admin API wrapper, utility modules, PasswordGate hash store
+- [x] 03-01-PLAN.md — DB migrations (client_billing, admin columns, anon RLS) + admin Edge Function with auth verifier
+- [x] 03-02-PLAN.md — Supabase client, data hooks, row mapper, admin API wrapper, utility modules, PasswordGate hash store
 - [ ] 03-03-PLAN.md — Dashboard data source swap (CSV to Supabase), delete UploadView, Admin nav, last-synced footer, sync chip
 - [ ] 03-04-PLAN.md — Admin UI: AdminView tabs, AdminTable, AdminModal, all 5 entity tabs (Switchers/Clients/Categories/Billing/Sync)
 - [ ] 03-05-PLAN.md — AI report keyed cache fix (DASH-04) + unit tests for mapSupabaseRow, billingCalc, cacheKey, relativeTime
