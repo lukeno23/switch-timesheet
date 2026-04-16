@@ -687,11 +687,51 @@ export function classifyCategory(
     return { category: "Production", confidence: "confident" };
   }
 
-  // --- PRIORITY 12: Marketing Categories ---
+  // --- PRIORITY 12: Design Categories (moved above Marketing) ---
+  // Design keywords checked first so that "visual copy changes" or
+  // "copy of banner" classify as Production, not Copywriting.
 
-  // Copywriting (check before generic marketing to avoid false matches)
+  // Brand Design
+  if (containsAny(td, BRAND_DESIGN_KEYWORDS)) {
+    return { category: "Brand Design", confidence: "confident" };
+  }
+
+  // Production
+  if (containsAny(td, PRODUCTION_KEYWORDS)) {
+    return { category: "Production", confidence: "confident" };
+  }
+
+  // Web Design
+  if (containsAny(td, WEB_DESIGN_KEYWORDS)) {
+    return { category: "Web Design", confidence: "confident" };
+  }
+
+  // Motion
+  if (containsAny(td, MOTION_KEYWORDS)) {
+    return { category: "Motion", confidence: "confident" };
+  }
+
+  // Photography
+  if (containsAny(td, PHOTOGRAPHY_KEYWORDS)) {
+    return { category: "Photography", confidence: "confident" };
+  }
+
+  // Misc Design
+  if (containsAny(td, MISC_DESIGN_KEYWORDS)) {
+    return { category: "Misc Design", confidence: "confident" };
+  }
+
+  // --- PRIORITY 13: Marketing Categories ---
+
+  // Copywriting — skip if task also contains design keywords (ambiguous
+  // "copy" in design context means changes/copies, not copywriting)
+  const hasDesignSignal = containsAny(td, PRODUCTION_KEYWORDS) ||
+    containsAny(td, BRAND_DESIGN_KEYWORDS) ||
+    containsAny(td, WEB_DESIGN_KEYWORDS) ||
+    containsAny(td, MOTION_KEYWORDS) ||
+    containsAny(td, MISC_DESIGN_KEYWORDS);
   // TL = Thought Leadership = Copywriting
-  if (containsAny(td, COPYWRITING_KEYWORDS) || td.includes("fyorin tl") || td.includes("tl ")) {
+  if (!hasDesignSignal && (containsAny(td, COPYWRITING_KEYWORDS) || td.includes("fyorin tl") || td.includes("tl "))) {
     return { category: "Copywriting", confidence: "confident" };
   }
 
@@ -748,38 +788,6 @@ export function classifyCategory(
   // Web Management
   if (containsAny(td, WEB_MANAGEMENT_KEYWORDS)) {
     return { category: "Web Management", confidence: "confident" };
-  }
-
-  // --- PRIORITY 13: Design Categories ---
-
-  // Brand Design
-  if (containsAny(td, BRAND_DESIGN_KEYWORDS)) {
-    return { category: "Brand Design", confidence: "confident" };
-  }
-
-  // Production
-  if (containsAny(td, PRODUCTION_KEYWORDS)) {
-    return { category: "Production", confidence: "confident" };
-  }
-
-  // Web Design
-  if (containsAny(td, WEB_DESIGN_KEYWORDS)) {
-    return { category: "Web Design", confidence: "confident" };
-  }
-
-  // Motion
-  if (containsAny(td, MOTION_KEYWORDS)) {
-    return { category: "Motion", confidence: "confident" };
-  }
-
-  // Photography
-  if (containsAny(td, PHOTOGRAPHY_KEYWORDS)) {
-    return { category: "Photography", confidence: "confident" };
-  }
-
-  // Misc Design
-  if (containsAny(td, MISC_DESIGN_KEYWORDS)) {
-    return { category: "Misc Design", confidence: "confident" };
   }
 
   // --- PRIORITY 14: Other Cross-Department ---
