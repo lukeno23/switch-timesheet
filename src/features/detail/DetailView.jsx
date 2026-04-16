@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronLeft, Sparkles, BarChart2, PieChart as PieChartIcon } from 'lucide-react';
+import { ChevronLeft, ChevronUp, ChevronDown, Sparkles, BarChart2, PieChart as PieChartIcon } from 'lucide-react';
 import { COLORS } from '../../constants/colors.js';
 import { getWeekNumber } from '../../shared/utils/getWeekNumber.js';
 import { callGemini } from '../../shared/services/gemini.js';
@@ -15,12 +15,22 @@ import { MultiLineTrendChart } from '../dashboard/MultiLineTrendChart.jsx';
 import { AllocationChart } from '../dashboard/AllocationChart.jsx';
 import { ClientDistributionChart } from '../dashboard/ClientDistributionChart.jsx';
 import { DonutChart } from '../dashboard/DonutChart.jsx';
+import { WeeklyCalendar } from '../../shared/components/WeeklyCalendar.jsx';
+import { ChartDrilldownModal } from '../../shared/components/ChartDrilldownModal.jsx';
 
 export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpenSettings, billingData, clientId, clientTargetRate }) => {
   const [timeframe, setTimeframe] = useState('day');
   const [trendMode, setTrendMode] = useState('total');
   const [selectedLines, setSelectedLines] = useState([]);
   const [allocationChartType, setAllocationChartType] = useState('bar');
+
+  // Calendar & drilldown modal state (switcher detail)
+  const [calendarOpen, setCalendarOpen] = useState(true);
+  const [chartModal, setChartModal] = useState({ isOpen: false, title: '', tasks: [], onNavigate: null });
+
+  const handleCalendarEventClick = (event) => {
+    setChartModal({ isOpen: true, title: event.task, tasks: [event], onNavigate: null });
+  };
 
   // AI State
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -243,6 +253,28 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
     return { items: Object.values(acc).sort((a, b) => b.minutes - a.minutes), totalMinutes: totalMins };
   }, [data]);
 
+  // Per-client category breakdown (switcher detail)
+  const clientCategoryBreakdown = useMemo(() => {
+    if (type !== 'switcher' || !data) return [];
+    const byClient = {};
+    data.forEach(d => {
+      const client = d.client || 'Unknown';
+      if (!byClient[client]) byClient[client] = { client, categories: {}, total: 0 };
+      const cat = d.categoryName || 'Misc';
+      byClient[client].categories[cat] = (byClient[client].categories[cat] || 0) + d.minutes / 60;
+      byClient[client].total += d.minutes / 60;
+    });
+    return Object.values(byClient)
+      .sort((a, b) => b.total - a.total)
+      .map(item => ({
+        ...item,
+        total: parseFloat(item.total.toFixed(1)),
+        categories: Object.entries(item.categories)
+          .map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(1)) }))
+          .sort((a, b) => b.hours - a.hours),
+      }));
+  }, [data, type]);
+
   // Billing monthly series (client detail only)
   const billingMonthly = useMemo(() => {
     if (!billingData || !data || type !== 'client' || !clientId) return [];
@@ -406,6 +438,24 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
           )}
         </div>
       </div>
+
+      {/* Weekly Calendar — switcher detail only */}
+      {type === 'switcher' && (
+        <Card className="mb-6">
+          <button
+            onClick={() => setCalendarOpen(v => !v)}
+            className="w-full flex items-center justify-between cursor-pointer select-none"
+          >
+            <h3 className="text-lg font-bold text-switch-secondary font-dm">Weekly Calendar</h3>
+            {calendarOpen ? <ChevronUp size={18} className="text-stone-400" /> : <ChevronDown size={18} className="text-stone-400" />}
+          </button>
+          {calendarOpen && (
+            <div className="mt-4">
+              <WeeklyCalendar data={data} onEventClick={handleCalendarEventClick} />
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 mb-8">
         <Card className="w-full">
@@ -602,6 +652,40 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
           </div>
         </Card>
       )}
+
+      {/* Per-client category breakdown — switcher detail only */}
+      {type === 'switcher' && clientCategoryBreakdown.length > 0 && (
+        <Card className="mt-6">
+          <h3 className="text-lg font-bold text-switch-secondary font-dm mb-1">Category Time by Client</h3>
+          <p className="text-sm text-stone-400 font-dm mb-4">Which clients each category goes to</p>
+          <div className="space-y-4">
+            {clientCategoryBreakdown.slice(0, 10).map(item => (
+              <div key={item.client} className="border-b border-stone-100 pb-3 last:border-0">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-bold text-switch-secondary font-dm">{item.client}</span>
+                  <span className="text-sm font-bold text-switch-primary font-dm">{item.total}h</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {item.categories.map(cat => (
+                    <span key={cat.name} className="text-xs bg-stone-100 text-stone-600 rounded-full px-2 py-0.5 font-dm">
+                      {cat.name}: {cat.hours}h
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Chart Drilldown Modal for calendar event clicks */}
+      <ChartDrilldownModal
+        isOpen={chartModal.isOpen}
+        onClose={() => setChartModal(m => ({ ...m, isOpen: false }))}
+        title={chartModal.title}
+        tasks={chartModal.tasks}
+        onNavigate={chartModal.onNavigate}
+      />
     </div>
   );
 };

@@ -20,7 +20,7 @@ import { useSupabaseData } from './shared/hooks/useSupabaseData.js';
 import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeTime.js';
 import { calcEffectiveRate } from './shared/utils/billingCalc.js';
 import { AdminView } from './features/admin/AdminView.jsx';
-import { CategoriesView } from './features/categories/CategoriesView.jsx';
+import { CategoriesView, CategoryDetailView } from './features/categories/CategoriesView.jsx';
 import { UpcomingEvents } from './shared/components/UpcomingEvents.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
@@ -399,33 +399,11 @@ const AuthenticatedApp = () => {
             )}
 
             {view.type === 'category_detail' && categoryDetailData && (
-              <div className="animate-in fade-in duration-500">
-                <button
-                  onClick={() => setView({ type: 'tasks', id: null })}
-                  className="flex items-center text-switch-primary hover:text-switch-primary-dark mb-4 font-dm"
-                >
-                  <ArrowRight className="rotate-180 mr-1" size={16} /> Back to Categories
-                </button>
-                <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-2">{view.id}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <Card>
-                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Total Hours</p>
-                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.totalHours}</p>
-                  </Card>
-                  <Card>
-                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Switchers</p>
-                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.switcherCount}</p>
-                  </Card>
-                  <Card>
-                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Clients</p>
-                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.clientCount}</p>
-                  </Card>
-                </div>
-                <Card>
-                  <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Events</h3>
-                  <TaskTable data={categoryDetailData.events} showContext />
-                </Card>
-              </div>
+              <CategoryDetailView
+                categoryName={view.id}
+                categoryDetailData={categoryDetailData}
+                onBack={() => setView({ type: 'tasks', id: null })}
+              />
             )}
 
             {view.type.endsWith('_detail') && view.type !== 'category_detail' && (() => {

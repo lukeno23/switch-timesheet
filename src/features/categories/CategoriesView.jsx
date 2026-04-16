@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Tag, ChevronDown, ChevronUp, Users, Briefcase, Clock, Layers } from 'lucide-react';
+import { Tag, ChevronDown, ChevronUp, Users, Briefcase, Clock, Layers, ArrowLeft } from 'lucide-react';
 import { Card } from '../../shared/components/Card.jsx';
+import { AllocationChart } from '../dashboard/AllocationChart.jsx';
+import { DonutChart } from '../dashboard/DonutChart.jsx';
+import { SimpleTrendChart } from '../dashboard/SimpleTrendChart.jsx';
+import { TaskTable } from '../../shared/components/TaskTable.jsx';
 
 // Category-to-department mapping from Legend.pdf
 const CATEGORY_DEPARTMENTS = {
@@ -213,6 +217,128 @@ export const CategoriesView = ({ data, onSelectCategory }) => {
           );
         })}
       </div>
+    </div>
+  );
+};
+
+// --- Category Detail View with enriched analytics ---
+
+export const CategoryDetailView = ({ categoryName, categoryDetailData, onBack }) => {
+  // Switcher breakdown for this category
+  const switcherAllocation = useMemo(() => {
+    if (!categoryDetailData?.events) return [];
+    const grouped = {};
+    categoryDetailData.events.forEach(d => {
+      const name = d.switcher || 'Unknown';
+      grouped[name] = (grouped[name] || 0) + d.minutes / 60;
+    });
+    return Object.entries(grouped)
+      .map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(1)) }))
+      .sort((a, b) => b.hours - a.hours);
+  }, [categoryDetailData]);
+
+  // Client distribution for this category
+  const clientDistribution = useMemo(() => {
+    if (!categoryDetailData?.events) return [];
+    const grouped = {};
+    categoryDetailData.events.forEach(d => {
+      const name = d.client || 'Unknown';
+      grouped[name] = (grouped[name] || 0) + d.minutes / 60;
+    });
+    return Object.entries(grouped)
+      .map(([name, value]) => ({ name, value: parseFloat(value.toFixed(1)) }))
+      .sort((a, b) => b.value - a.value);
+  }, [categoryDetailData]);
+
+  // Trend data for this category (hours per week)
+  const categoryTrendData = useMemo(() => {
+    if (!categoryDetailData?.events) return [];
+    const byWeek = {};
+    categoryDetailData.events.forEach(d => {
+      if (!d.dateObj) return;
+      const weekStart = new Date(d.dateObj);
+      const day = weekStart.getDay();
+      weekStart.setDate(weekStart.getDate() - day + (day === 0 ? -6 : 1)); // Monday
+      const key = weekStart.toISOString().slice(0, 10);
+      const label = `${weekStart.getDate()}/${weekStart.getMonth() + 1}`;
+      byWeek[key] = byWeek[key] || { date: key, label, hours: 0 };
+      byWeek[key].hours += d.minutes / 60;
+    });
+    return Object.values(byWeek)
+      .map(w => ({ ...w, hours: parseFloat(w.hours.toFixed(1)) }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [categoryDetailData]);
+
+  if (!categoryDetailData) return null;
+
+  if (!categoryDetailData.events || categoryDetailData.events.length === 0) {
+    return (
+      <div className="animate-in fade-in duration-500">
+        <button
+          onClick={onBack}
+          className="flex items-center text-switch-primary hover:text-switch-primary-dark mb-4 font-dm"
+        >
+          <ArrowLeft size={16} className="mr-1" /> Back to Categories
+        </button>
+        <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-4">{categoryName}</h2>
+        <Card>
+          <p className="text-stone-400 text-sm font-dm py-8 text-center">
+            No events recorded for this category in the selected period.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-in fade-in duration-500">
+      <button
+        onClick={onBack}
+        className="flex items-center text-switch-primary hover:text-switch-primary-dark mb-4 font-dm"
+      >
+        <ArrowLeft size={16} className="mr-1" /> Back to Categories
+      </button>
+      <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-2">{categoryName}</h2>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Total Hours</p>
+          <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.totalHours}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Switchers</p>
+          <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.switcherCount}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Clients</p>
+          <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.clientCount}</p>
+        </Card>
+      </div>
+
+      {/* Analytics charts for category detail */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <h3 className="text-lg font-bold text-switch-secondary font-dm mb-1">Switcher Breakdown</h3>
+          <p className="text-sm text-stone-400 font-dm mb-6">Hours by team member</p>
+          <AllocationChart data={switcherAllocation} limit={10} />
+        </Card>
+        <Card>
+          <h3 className="text-lg font-bold text-switch-secondary font-dm mb-1">Client Distribution</h3>
+          <p className="text-sm text-stone-400 font-dm mb-6">Share of total hours</p>
+          <DonutChart data={clientDistribution} dataKey="value" />
+        </Card>
+      </div>
+      <Card className="mb-8">
+        <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Time Trend</h3>
+        <SimpleTrendChart data={categoryTrendData} />
+      </Card>
+
+      {/* Event table */}
+      <Card>
+        <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Events</h3>
+        <TaskTable data={categoryDetailData.events} showContext />
+      </Card>
     </div>
   );
 };
