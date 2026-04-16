@@ -1024,14 +1024,50 @@ export function getDepartment(
 }
 
 // ============================================================
+// Attendee-based meeting type detection
+// ============================================================
+
+const SWITCH_INTERNAL_DOMAINS = new Set(["switch.com.mt", "switchmalta.com"]);
+
+/** Meeting categories that should be corrected based on attendee data */
+const MEETING_CATEGORIES = new Set([
+  "External Client Meeting",
+  "Internal Client Meeting",
+  "Non-Client Meeting",
+]);
+
+/**
+ * Check if an email address belongs to a Switch team member.
+ */
+function isInternalEmail(email: string): boolean {
+  const domain = email.toLowerCase().split("@")[1];
+  return domain ? SWITCH_INTERNAL_DOMAINS.has(domain) : false;
+}
+
+/**
+ * Determine whether a meeting has external attendees based on the
+ * attendee list from Google Calendar.
+ *
+ * @returns "external" if any non-Switch attendee, "internal" if all Switch, null if no data
+ */
+function detectMeetingType(
+  attendees: Array<{ email: string; displayName?: string }> | null,
+): "external" | "internal" | null {
+  if (!attendees || attendees.length === 0) return null;
+  const hasExternal = attendees.some((a) => !isInternalEmail(a.email));
+  return hasExternal ? "external" : "internal";
+}
+
+// ============================================================
 // classifyEvent
 // ============================================================
 
 /**
  * Top-level classification function that combines alias resolution,
- * category classification, and department assignment.
+ * category classification, attendee-based meeting correction, and
+ * department assignment.
  *
- * @param parsed - The parsed event data
+ * @param parsed - The parsed event data (includes attendees)
  * @param switcherName - The switcher's name
  * @param switcherDept - The switcher's primary department
  * @param isManagementMember - Whether the switcher is a management member
@@ -1050,11 +1086,31 @@ export function classifyEvent(
     ? resolveClientAlias(parsed.client_name_raw, aliasMap)
     : parsed.client_name_raw;
 
-  // Step 2: Classify category
-  const { category, confidence } = classifyCategory(
+  // Step 2: Classify category (keyword-based)
+  let { category, confidence } = classifyCategory(
     parsed.task_details,
     clientName,
   );
+
+  // Step 2a: Attendee-based meeting correction
+  // Override keyword-based meeting classification with actual attendee data
+  if (MEETING_CATEGORIES.has(category)) {
+    const meetingType = detectMeetingType(parsed.attendees);
+    if (meetingType === "internal" && category === "External Client Meeting") {
+      // All attendees are Switch staff — not an external meeting
+      if (clientName.trim() === "" || isNonClientName(clientName)) {
+        category = "Non-Client Meeting";
+      } else {
+        category = "Internal Client Meeting";
+      }
+    } else if (meetingType === "external" && category === "Non-Client Meeting") {
+      // Has external attendees — upgrade to external meeting
+      category = "External Client Meeting";
+    } else if (meetingType === "external" && category === "Internal Client Meeting") {
+      // Has external attendees — this is actually an external meeting
+      category = "External Client Meeting";
+    }
+  }
 
   // Step 2b: Internal client override
   // When the client is empty/non-client and the category is internal work,
@@ -1063,6 +1119,7 @@ export function classifyEvent(
     "Administration", "Emails", "Admin", "Task management",
     "Non-Client Meeting", "QA", "Research", "Brainstorming",
     "Brief writing", "Configuring LLM", "Misc",
+    "Internal Client Meeting",
   ]);
   let resolvedClient = clientName;
   if (
