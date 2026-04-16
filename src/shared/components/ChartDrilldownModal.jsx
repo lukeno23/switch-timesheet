@@ -1,11 +1,12 @@
 import { X } from 'lucide-react';
+import { TaskTable } from './TaskTable.jsx';
 
-export const TaskDrilldownModal = ({ isOpen, onClose, title, tasks, onNavigate }) => {
+export const ChartDrilldownModal = ({ isOpen, onClose, title, tasks, onNavigate }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl">
         <div className="p-6 border-b border-stone-100 flex justify-between items-center">
           <div className="flex flex-col gap-0.5">
             <h3 className="text-xl font-bold text-switch-secondary font-dm">{title}</h3>
@@ -26,21 +27,17 @@ export const TaskDrilldownModal = ({ isOpen, onClose, title, tasks, onNavigate }
           {(!tasks || tasks.length === 0) ? (
             <p className="text-stone-400 text-sm font-dm">No tasks to display.</p>
           ) : (
-            <ul className="space-y-2">
-              {tasks.map((task, i) => (
-                <li key={i} className="bg-stone-50 rounded-lg p-3">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-switch-secondary font-dm truncate">{task.task}</p>
-                      <p className="text-xs text-stone-500 font-dm mt-0.5">{task.client} · {task.dateStr}</p>
-                    </div>
-                    <span className="text-sm font-bold text-switch-primary font-dm whitespace-nowrap">
-                      {(task.minutes / 60).toFixed(1)}h
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className="flex justify-between items-center mb-3 px-1">
+                <span className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm">
+                  {tasks.length} events
+                </span>
+                <span className="text-sm font-bold text-switch-primary font-dm">
+                  {(tasks.reduce((s, t) => s + t.minutes, 0) / 60).toFixed(1)}h total
+                </span>
+              </div>
+              <TaskTable data={tasks} showContext={true} />
+            </>
           )}
         </div>
       </div>
