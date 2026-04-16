@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   Users, Briefcase, Building2, ArrowRight, ArrowUpDown,
   BarChart2, Calendar as CalendarIcon, Settings, Tag,
-  ShieldCheck,
+  ShieldCheck, Search,
 } from 'lucide-react';
 
 import { COLORS } from './constants/colors.js';
@@ -21,7 +21,9 @@ import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeT
 import { calcEffectiveRate } from './shared/utils/billingCalc.js';
 import { AdminView } from './features/admin/AdminView.jsx';
 import { CategoriesView, CategoryDetailView } from './features/categories/CategoriesView.jsx';
-import { UpcomingEvents } from './shared/components/UpcomingEvents.jsx';
+import { HistoricalUpcomingToggle } from './shared/components/HistoricalUpcomingToggle.jsx';
+import { ChartDrilldownModal } from './shared/components/ChartDrilldownModal.jsx';
+import { TaskExplorerView } from './features/task-explorer/TaskExplorerView.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -105,6 +107,8 @@ const AuthenticatedApp = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('switch_ai_key') || '');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [upcomingMode, setUpcomingMode] = useState(false);
+  const [chartModal, setChartModal] = useState({ isOpen: false, title: '', tasks: [], onNavigate: null });
 
   // Set default date range when data loads
   useEffect(() => {
@@ -117,19 +121,38 @@ const AuthenticatedApp = () => {
     setView({ type: type + '_detail', id });
   };
 
-  // Date-range filtered data
+  const handleChartClick = (entityName, entityType, filteredEvents) => {
+    const navigateView = entityType
+      ? () => setView({ type: `${entityType}_detail`, id: entityName })
+      : null;
+    setChartModal({
+      isOpen: true,
+      title: entityName,
+      tasks: filteredEvents,
+      onNavigate: navigateView,
+    });
+  };
+
+  // Date-range filtered data (with Historical/Upcoming toggle support)
   const filteredData = useMemo(() => {
     if (!data) return null;
-    if (!dateRange.start || !dateRange.end) return data;
+    let items = data;
 
-    const [startYear, startMonth, startDay] = dateRange.start.split('-').map(Number);
-    const start = new Date(startYear, startMonth - 1, startDay);
-    const [endYear, endMonth, endDay] = dateRange.end.split('-').map(Number);
-    const end = new Date(endYear, endMonth - 1, endDay);
-    end.setHours(23, 59, 59, 999);
-
-    return data.filter(d => d.dateObj >= start && d.dateObj <= end);
-  }, [data, dateRange]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (upcomingMode) {
+      items = items.filter(d => d.dateObj >= today);
+    } else {
+      if (!dateRange.start || !dateRange.end) return items;
+      const [startYear, startMonth, startDay] = dateRange.start.split('-').map(Number);
+      const start = new Date(startYear, startMonth - 1, startDay);
+      const [endYear, endMonth, endDay] = dateRange.end.split('-').map(Number);
+      const end = new Date(endYear, endMonth - 1, endDay);
+      end.setHours(23, 59, 59, 999);
+      items = items.filter(d => d.dateObj >= start && d.dateObj <= end);
+    }
+    return items;
+  }, [data, dateRange, upcomingMode]);
 
   // List data for ListView screens
   const listData = useMemo(() => {
@@ -235,6 +258,7 @@ const AuthenticatedApp = () => {
     { id: 'departments', label: 'Teams', icon: Building2 },
     { id: 'clients', label: 'Clients', icon: Briefcase },
     { id: 'tasks', label: 'Categories', icon: Tag },
+    { id: 'task-explorer', label: 'Task Explorer', icon: Search },
     { id: 'admin', label: 'Admin', icon: ShieldCheck },
   ];
 
@@ -278,26 +302,33 @@ const AuthenticatedApp = () => {
             ))}
           </nav>
 
-          {/* Date Filter */}
+          {/* Historical/Upcoming Toggle + Date Filter */}
           <div className="px-6 py-4 border-t border-stone-100">
-            <div className="flex items-center gap-2 mb-2 text-stone-400">
-              <CalendarIcon size={14} />
-              <span className="text-xs font-bold uppercase tracking-wider">Date Range</span>
+            <div className="mb-3">
+              <HistoricalUpcomingToggle upcomingMode={upcomingMode} onChange={setUpcomingMode} />
             </div>
-            <div className="flex flex-col gap-2">
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
-              />
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
-              />
-            </div>
+            {!upcomingMode && (
+              <>
+                <div className="flex items-center gap-2 mb-2 text-stone-400">
+                  <CalendarIcon size={14} />
+                  <span className="text-xs font-bold uppercase tracking-wider">Date Range</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
+                  />
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Footer */}
@@ -334,67 +365,60 @@ const AuthenticatedApp = () => {
                 onNavigate={handleNavigate}
                 apiKey={apiKey}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onChartClick={handleChartClick}
               />
             )}
 
             {view.type === 'switchers' && (
-              <>
-                <ListView
-                  title="All Switchers"
-                  items={listData.switchers || []}
-                  icon={Users}
-                  onItemClick={(id) => setView({ type: 'switcher_detail', id })}
-                  sortBy={sortOrder}
-                  onSortChange={setSortOrder}
-                />
-                <UpcomingEvents events={data} />
-              </>
+              <ListView
+                title="All Switchers"
+                items={listData.switchers || []}
+                icon={Users}
+                onItemClick={(id) => setView({ type: 'switcher_detail', id })}
+                sortBy={sortOrder}
+                onSortChange={setSortOrder}
+              />
             )}
 
             {view.type === 'departments' && (
-              <>
-                <ListView
-                  title="All Teams"
-                  items={listData.departments || []}
-                  icon={Building2}
-                  onItemClick={(id) => setView({ type: 'dept_detail', id })}
-                  sortBy={sortOrder}
-                  onSortChange={setSortOrder}
-                />
-                <UpcomingEvents events={data} />
-              </>
+              <ListView
+                title="All Teams"
+                items={listData.departments || []}
+                icon={Building2}
+                onItemClick={(id) => setView({ type: 'dept_detail', id })}
+                sortBy={sortOrder}
+                onSortChange={setSortOrder}
+              />
             )}
 
             {view.type === 'clients' && (
-              <>
-                <ListView
-                  title="All Clients"
-                  items={clientsWithBilling}
-                  icon={Briefcase}
-                  onItemClick={(id) => setView({ type: 'client_detail', id })}
-                  sortBy={sortOrder}
-                  onSortChange={setSortOrder}
-                  renderExtra={(item) => (
-                    <>
-                      <span className="text-stone-300 mx-0.5">|</span>
-                      {item.effectiveRate != null ? (
-                        <span className="text-switch-primary font-bold text-sm">
-                          {'\u20AC'}{item.effectiveRate.toFixed(2)}/hr
-                        </span>
-                      ) : (
-                        <span className="text-stone-400 text-sm">{'\u2014'}</span>
-                      )}
-                    </>
-                  )}
-                />
-                <UpcomingEvents events={data} />
-              </>
+              <ListView
+                title="All Clients"
+                items={clientsWithBilling}
+                icon={Briefcase}
+                onItemClick={(id) => setView({ type: 'client_detail', id })}
+                sortBy={sortOrder}
+                onSortChange={setSortOrder}
+                renderExtra={(item) => (
+                  <>
+                    <span className="text-stone-300 mx-0.5">|</span>
+                    {item.effectiveRate != null ? (
+                      <span className="text-switch-primary font-bold text-sm">
+                        {'\u20AC'}{item.effectiveRate.toFixed(2)}/hr
+                      </span>
+                    ) : (
+                      <span className="text-stone-400 text-sm">{'\u2014'}</span>
+                    )}
+                  </>
+                )}
+              />
             )}
 
             {view.type === 'tasks' && (
               <CategoriesView
                 data={filteredData}
                 onSelectCategory={(categoryName) => setView({ type: 'category_detail', id: categoryName })}
+                onChartClick={handleChartClick}
               />
             )}
 
@@ -403,6 +427,15 @@ const AuthenticatedApp = () => {
                 categoryName={view.id}
                 categoryDetailData={categoryDetailData}
                 onBack={() => setView({ type: 'tasks', id: null })}
+                onChartClick={handleChartClick}
+              />
+            )}
+
+            {view.type === 'task-explorer' && (
+              <TaskExplorerView
+                data={filteredData}
+                refData={refData}
+                onSelectDetail={(type, id) => setView({ type: `${type}_detail`, id })}
               />
             )}
 
@@ -410,34 +443,27 @@ const AuthenticatedApp = () => {
               const clientRecord = view.type === 'client_detail'
                 ? refData?.clients?.find(c => c.name === view.id)
                 : null;
-              const upcomingFilterKey = view.type === 'switcher_detail'
-                ? 'switcher'
-                : view.type === 'client_detail'
-                ? 'client'
-                : 'department';
               return (
-                <>
-                  <DetailView
-                    title={view.id}
-                    type={view.type.replace('_detail', '').replace('dept', 'department')}
-                    data={detailData}
-                    dateRange={dateRange}
-                    onBack={() => {
-                      const backType = view.type.endsWith('client_detail')
-                        ? 'clients'
-                        : view.type.endsWith('dept_detail')
-                        ? 'departments'
-                        : 'switchers';
-                      setView({ type: backType, id: null });
-                    }}
-                    apiKey={apiKey}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                    billingData={billingData}
-                    clientId={clientRecord?.id}
-                    clientTargetRate={clientRecord?.target_hourly_rate}
-                  />
-                  <UpcomingEvents events={data} filterKey={upcomingFilterKey} filterValue={view.id} />
-                </>
+                <DetailView
+                  title={view.id}
+                  type={view.type.replace('_detail', '').replace('dept', 'department')}
+                  data={detailData}
+                  dateRange={dateRange}
+                  onBack={() => {
+                    const backType = view.type.endsWith('client_detail')
+                      ? 'clients'
+                      : view.type.endsWith('dept_detail')
+                      ? 'departments'
+                      : 'switchers';
+                    setView({ type: backType, id: null });
+                  }}
+                  apiKey={apiKey}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  billingData={billingData}
+                  clientId={clientRecord?.id}
+                  clientTargetRate={clientRecord?.target_hourly_rate}
+                  onChartClick={handleChartClick}
+                />
               );
             })()}
 
@@ -449,7 +475,23 @@ const AuthenticatedApp = () => {
                 latestSync={latestSync}
               />
             )}
+
+            {upcomingMode && filteredData && filteredData.length === 0 && (
+              <div className="flex items-center justify-center py-16">
+                <p className="text-stone-400 text-sm font-dm">
+                  No upcoming events in the selected date range. Switch to Historical to view past data.
+                </p>
+              </div>
+            )}
           </ErrorBoundary>
+
+          <ChartDrilldownModal
+            isOpen={chartModal.isOpen}
+            onClose={() => setChartModal(m => ({ ...m, isOpen: false }))}
+            title={chartModal.title}
+            tasks={chartModal.tasks}
+            onNavigate={chartModal.onNavigate}
+          />
         </main>
       </div>
     </ErrorBoundary>
