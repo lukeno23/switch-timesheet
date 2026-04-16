@@ -763,10 +763,12 @@ async function handleTriggerSync(
   if (payload.backfill_end) body.backfill_end = payload.backfill_end;
 
   try {
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const syncResponse = await fetch(`${supabaseUrl}/functions/v1/sync`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceRoleKey}`,
         "x-sync-secret": syncSecret,
       },
       body: JSON.stringify(body),
@@ -774,9 +776,9 @@ async function handleTriggerSync(
 
     if (!syncResponse.ok) {
       const errText = await syncResponse.text();
-      console.error("Sync trigger failed:", errText);
+      console.error("Sync trigger failed:", syncResponse.status, errText);
       return jsonResponse(
-        { error: "Could not start sync. The sync service may be busy." },
+        { error: `Sync trigger failed (${syncResponse.status}): ${errText}` },
         502,
       );
     }
