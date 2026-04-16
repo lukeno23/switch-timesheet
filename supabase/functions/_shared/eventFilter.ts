@@ -17,6 +17,9 @@ const PERSONAL_EXACT: Set<string> = new Set([
   "yoga",
   "hair",
   "buffer",
+  "break",
+  "lunch break",
+  "food",
 ]);
 
 // Substring matches (case-insensitive) — from classify_with_ai.py expanded list
@@ -54,6 +57,13 @@ const PERSONAL_CONTAINS: string[] = [
   "commute",
   "school run",
   "personal errand",
+  "food",
+  "snack",
+  "nap",
+  "walk the dog",
+  "vet",
+  "massage",
+  "meditation",
 ];
 
 /**

@@ -441,7 +441,6 @@ const CLIENT_ADMIN_CATCHALL_KEYWORDS = [
 // instead of falling to Unknown/Misc
 
 const INTERNAL_CATCH_ALL_KEYWORDS: string[] = [
-  "break",
   "changes & output",
   "changes and output",
   "inbox",
@@ -1057,12 +1056,17 @@ export function classifyEvent(
     clientName,
   );
 
-  // Step 2b: Internal catch-all override (D-18)
-  // If the catch-all rule fired (category "Administration") and client is
-  // empty or non-client, override client to "Internal"
+  // Step 2b: Internal client override
+  // When the client is empty/non-client and the category is internal work,
+  // assign to "Internal" client instead of leaving as Unknown
+  const INTERNAL_WORK_CATEGORIES = new Set([
+    "Administration", "Emails", "Admin", "Task management",
+    "Non-Client Meeting", "QA", "Research", "Brainstorming",
+    "Brief writing", "Configuring LLM", "Misc",
+  ]);
   let resolvedClient = clientName;
   if (
-    category === "Administration" &&
+    INTERNAL_WORK_CATEGORIES.has(category) &&
     (resolvedClient.trim() === "" || isNonClientName(resolvedClient))
   ) {
     resolvedClient = "Internal";
