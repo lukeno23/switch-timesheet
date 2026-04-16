@@ -475,11 +475,24 @@ Deno.serve(async (req: Request) => {
         // 2. Filter events (pre-parse: personal, all-day, zero-duration, removable)
         const filteredEvents = filterEvents(rawEvents);
 
+        // 2b. Filter declined meetings (D-19)
+        // If the Switcher explicitly declined a meeting, exclude it from their timesheet
+        const afterDeclinedFilter = filteredEvents.filter(event => {
+          if (!event.attendees || event.attendees.length === 0) return true;
+          const switcherAttendee = event.attendees.find(
+            (a: { email?: string; responseStatus?: string }) => a.email === switcher.email
+          );
+          if (switcherAttendee && switcherAttendee.responseStatus === 'declined') {
+            return false;
+          }
+          return true;
+        });
+
         // 3. Parse and post-filter (weekend, zero-duration on parsed times, personal with client context)
         const parsedEvents: ParsedEvent[] = [];
         const googleEventIds: string[] = [];
 
-        for (const event of filteredEvents) {
+        for (const event of afterDeclinedFilter) {
           const parsed = parseCalendarEvent(event, ref.aliasMap);
           if (parsed) {
             parsedEvents.push(parsed);
