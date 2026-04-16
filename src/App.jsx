@@ -294,6 +294,7 @@ const AuthenticatedApp = () => {
             {view.type === 'dashboard' && (
               <DashboardView
                 data={filteredData || []}
+                dateRange={dateRange}
                 onNavigate={handleNavigate}
                 apiKey={apiKey}
                 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -349,6 +350,7 @@ const AuthenticatedApp = () => {
                 title={view.id}
                 type={view.type.replace('_detail', '').replace('dept', 'department')}
                 data={detailData}
+                dateRange={dateRange}
                 onBack={() => {
                   const backType = view.type.endsWith('client_detail')
                     ? 'clients'
