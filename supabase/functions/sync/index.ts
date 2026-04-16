@@ -508,6 +508,34 @@ Deno.serve(async (req: Request) => {
 
         // 4. Classify (Stage 1 - Rules)
         for (const parsed of parsedEvents) {
+          // D-23: Override persistence guard — skip reclassification
+          // for events where a user has manually overridden the classification.
+          // Update only time/title fields; preserve all classification fields.
+          const { data: existingEvent } = await supabaseAdmin
+            .from("events")
+            .select("id, classification_method")
+            .eq("switcher_id", switcher.id)
+            .eq("google_event_id", parsed.google_event_id)
+            .single();
+
+          if (existingEvent?.classification_method === "user_override") {
+            // Preserve override — update only time/title fields
+            await supabaseAdmin
+              .from("events")
+              .update({
+                event_date: parsed.event_date,
+                start_at: parsed.start_at,
+                end_at: parsed.end_at,
+                task_details: parsed.task_details,
+                title: parsed.title,
+                duration_minutes: parsed.duration_minutes,
+                temporal_status: parsed.temporal_status,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingEvent.id);
+            continue; // Skip classification for this event
+          }
+
           const classification = classifyEvent(
             parsed,
             switcher.name,
