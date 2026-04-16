@@ -50,6 +50,10 @@ const PERSONAL_CONTAINS: string[] = [
   "luncch",
   "malta marathon",
   "p&p flea",
+  "breakfast",
+  "commute",
+  "school run",
+  "personal errand",
 ];
 
 /**

@@ -436,6 +436,26 @@ const CLIENT_ADMIN_CATCHALL_KEYWORDS = [
   "reminder email",
 ];
 
+// --- Internal Catch-All Keywords (D-18) ---
+// Events with these generic/internal titles classify as Internal client
+// instead of falling to Unknown/Misc
+
+const INTERNAL_CATCH_ALL_KEYWORDS: string[] = [
+  "break",
+  "changes & output",
+  "changes and output",
+  "inbox",
+  "inbox management",
+  "emails",
+  "email",
+  "hr admin",
+  "small tasks",
+  "buffer time",
+  "downtime",
+  "admin",
+  "internal",
+];
+
 // --- Priority 16: Generic Meetings ---
 
 const GENERIC_MEETING_KEYWORDS = [
@@ -825,6 +845,13 @@ export function classifyCategory(
     return { category: "Client Admin", confidence: "confident" };
   }
 
+  // --- Internal Catch-All (D-18) ---
+  // Events with generic/internal titles classify as Internal client
+  // instead of falling to Unknown/Misc
+  if (containsAny(td, INTERNAL_CATCH_ALL_KEYWORDS)) {
+    return { category: "Administration", confidence: "confident" };
+  }
+
   // --- FALLBACK ---
   return { category: "Misc", confidence: "borderline" };
 }
@@ -839,6 +866,11 @@ const MANAGEMENT_CATEGORIES = new Set([
   "Operations",
   "Business Development",
   "HR",
+]);
+
+/** Management team members (D-20) — only these Switchers can have Management department */
+const MANAGEMENT_MEMBERS = new Set([
+  "Richard", "Melissa", "Ed", "Lisa", "Luke", "Andrea",
 ]);
 
 /** Categories from the Legend's Design department */
@@ -911,8 +943,13 @@ export function getDepartment(
 ): string {
   const td = taskDetails.toLowerCase().trim();
 
-  // Rule 1: Management categories -> always Management
+  // Rule 1: Management categories -> Management for management members
   if (MANAGEMENT_CATEGORIES.has(taskCategory)) {
+    // Rule 1b (D-20): Non-management Switchers never get Management department
+    // even for management-sounding categories — route to their primary dept
+    if (!MANAGEMENT_MEMBERS.has(switcherName)) {
+      return switcherDept;
+    }
     return "Management";
   }
 
@@ -1020,6 +1057,17 @@ export function classifyEvent(
     clientName,
   );
 
+  // Step 2b: Internal catch-all override (D-18)
+  // If the catch-all rule fired (category "Administration") and client is
+  // empty or non-client, override client to "Internal"
+  let resolvedClient = clientName;
+  if (
+    category === "Administration" &&
+    (resolvedClient.trim() === "" || isNonClientName(resolvedClient))
+  ) {
+    resolvedClient = "Internal";
+  }
+
   // Step 3: Assign department
   const department = getDepartment(
     category,
@@ -1033,7 +1081,7 @@ export function classifyEvent(
   const classification_method = category === "Misc" ? "misc" : "rule";
 
   return {
-    client_name: clientName,
+    client_name: resolvedClient,
     category,
     department,
     classification_method,
