@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 04-07-PLAN.md
-last_updated: "2026-04-16T15:33:49.947Z"
+stopped_at: Completed 04-06-PLAN.md
+last_updated: "2026-04-16T15:37:02.057Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 24
-  completed_plans: 23
-  percent: 96
+  completed_plans: 24
+  percent: 100
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P04 | 2min | 2 tasks | 2 files |
 | Phase 04 P05 | 3min | 2 tasks | 4 files |
 | Phase 04 P07 | 2min | 2 tasks | 2 files |
+| Phase 04 P06 | 5min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Extracted CategoryDetailView as named export from CategoriesView.jsx -- keeps category logic co-located in feature folder
 - [Phase 04]: Override corrections fetched once per LLM batch (not per event) to minimize DB round-trips
 - [Phase 04]: Override persistence guard uses direct .update() for time/title fields to prevent classification field contamination
+- [Phase 04]: AllocationChart onBarClick coexists with existing onClick -- onBarClick opens modal, onClick navigates
+- [Phase 04]: HistoricalUpcomingToggle placed in sidebar above date range controls for co-located temporal controls
 
 ### Roadmap Evolution
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-16T15:33:49.944Z
-Stopped at: Completed 04-07-PLAN.md
+Last session: 2026-04-16T15:37:02.054Z
+Stopped at: Completed 04-06-PLAN.md
 Resume file: None
