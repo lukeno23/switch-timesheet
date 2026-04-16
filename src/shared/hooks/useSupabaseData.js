@@ -16,7 +16,7 @@ export const useSupabaseData = () => {
       setError(null);
       const [eventsRes, switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes] =
         await Promise.all([
-          supabase.from('events').select('id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)').gte('event_date', '2026-01-04').order('event_date', { ascending: true }),
+          supabase.from('events').select('id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)', { count: 'exact' }).gte('event_date', '2026-01-04').order('event_date', { ascending: true }).range(0, 9999),
           supabase.from('switchers').select('*'),
           supabase.from('clients').select('*'),
           supabase.from('categories').select('*'),
