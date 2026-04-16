@@ -74,7 +74,7 @@ Plans:
 - [x] 03-03-PLAN.md — Dashboard data source swap (CSV to Supabase), delete UploadView, Admin nav, last-synced footer, sync chip
 - [x] 03-04-PLAN.md — Admin UI: AdminView tabs, AdminTable, AdminModal, all 5 entity tabs (Switchers/Clients/Categories/Billing/Sync)
 - [x] 03-05-PLAN.md — AI report keyed cache fix (DASH-04) + unit tests for mapSupabaseRow, billingCalc, cacheKey, relativeTime
-- [ ] 03-06-PLAN.md — Billing analytics: EUR/hr column in Clients list, monthly billing series in client drilldown
+- [x] 03-06-PLAN.md — Billing analytics: EUR/hr column in Clients list, monthly billing series in client drilldown
 - [ ] 03-07-PLAN.md — Upcoming events collapsible sections (Dashboard/Switchers/Clients/Departments) + final Phase 3 UAT
 **UI hint**: yes
 

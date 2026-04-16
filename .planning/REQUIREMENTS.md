@@ -35,7 +35,7 @@ Requirements for milestone v1: retire the manual CSV workflow and deliver an aut
 ### Dashboard
 
 - [ ] **DASH-01**: Dashboard reads timesheet data from Supabase instead of CSV upload
-- [ ] **DASH-02**: All existing views preserved (dashboard, switchers, teams, clients, categories, detail drilldowns)
+- [x] **DASH-02**: All existing views preserved (dashboard, switchers, teams, clients, categories, detail drilldowns)
 - [ ] **DASH-03**: Simple password protection gates access to the dashboard
 - [ ] **DASH-04**: AI narrative reports (Gemini) invalidate correctly when date range changes
 - [ ] **DASH-05**: Frontend deployed to Vercel (replaces GitHub Pages)
@@ -43,7 +43,7 @@ Requirements for milestone v1: retire the manual CSV workflow and deliver an aut
 ### Billing
 
 - [ ] **BILL-01**: Management users can input monthly billing amounts per client (manual entry per client/month or bulk CSV upload)
-- [ ] **BILL-02**: Dashboard shows hours-to-billing analysis per client per month (hours spent, amount billed, effective hourly rate, over/under-serviced indicators)
+- [x] **BILL-02**: Dashboard shows hours-to-billing analysis per client per month (hours spent, amount billed, effective hourly rate, over/under-serviced indicators)
 
 ### Code Quality
 
@@ -108,7 +108,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ADMN-03 | Phase 3 | Pending |
 | ADMN-04 | Phase 3 | Pending |
 | DASH-01 | Phase 3 | Pending |
-| DASH-02 | Phase 3 | Pending |
+| DASH-02 | Phase 3 | Complete |
 | DASH-03 | Phase 1 | Pending |
 | DASH-04 | Phase 3 | Pending |
 | DASH-05 | Phase 1 | Pending |
@@ -120,7 +120,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-06 | Phase 1 | Pending |
 | QUAL-07 | Phase 1 | Pending |
 | BILL-01 | Phase 3 | Pending |
-| BILL-02 | Phase 3 | Pending |
+| BILL-02 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total
