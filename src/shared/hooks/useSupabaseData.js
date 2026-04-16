@@ -2,6 +2,27 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase.js';
 import { mapSupabaseRow } from '../utils/mapSupabaseRow.js';
 
+const EVENT_COLUMNS = 'id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)';
+const PAGE_SIZE = 1000;
+
+const fetchAllEvents = async () => {
+  const allRows = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from('events')
+      .select(EVENT_COLUMNS)
+      .gte('event_date', '2026-01-04')
+      .order('event_date', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    allRows.push(...(data || []));
+    if (!data || data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return allRows;
+};
+
 export const useSupabaseData = () => {
   const [data, setData] = useState(null);
   const [refData, setRefData] = useState(null);
@@ -14,9 +35,9 @@ export const useSupabaseData = () => {
     try {
       setLoading(true);
       setError(null);
-      const [eventsRes, switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes] =
+      const [allEvents, switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes] =
         await Promise.all([
-          supabase.from('events').select('id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)', { count: 'exact' }).gte('event_date', '2026-01-04').order('event_date', { ascending: true }).range(0, 9999),
+          fetchAllEvents(),
           supabase.from('switchers').select('*'),
           supabase.from('clients').select('*'),
           supabase.from('categories').select('*'),
@@ -25,12 +46,11 @@ export const useSupabaseData = () => {
           supabase.from('sync_runs').select('*').order('started_at', { ascending: false }).limit(1),
         ]);
 
-      // Check for query errors
-      const queryError = [eventsRes, switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes]
+      const queryError = [switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes]
         .find(r => r.error);
       if (queryError?.error) throw new Error(queryError.error.message);
 
-      const mapped = (eventsRes.data || []).map(mapSupabaseRow);
+      const mapped = allEvents.map(mapSupabaseRow);
       setData(mapped);
       setRefData({
         switchers: switchersRes.data || [],
