@@ -96,7 +96,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Classification pipeline fixes: Internal catch-all rules, personal/internal boundary, declined meeting filter, Management dept restriction
 - [x] 04-02-PLAN.md — Override schema + backend: DB migration, admin Edge Function save-override action, mapSupabaseRow override fields, adminApi wrapper
-- [ ] 04-03-PLAN.md — Schema push + shared UI components: ChartDrilldownModal, HistoricalUpcomingToggle, FilterDropdown, ClassificationOverridePanel, TaskDrilldownModal update
+- [x] 04-03-PLAN.md — Schema push + shared UI components: ChartDrilldownModal, HistoricalUpcomingToggle, FilterDropdown, ClassificationOverridePanel, TaskDrilldownModal update
 - [ ] 04-04-PLAN.md — TaskTable column filtering upgrade + Task Explorer view
 - [ ] 04-05-PLAN.md — WeeklyCalendar 4-day upgrade + category drilldown analytics + Switcher calendar and per-client breakdown
 - [ ] 04-06-PLAN.md — App.jsx wiring: toggle state, Task Explorer nav, chart click handlers, UpcomingEvents removal
