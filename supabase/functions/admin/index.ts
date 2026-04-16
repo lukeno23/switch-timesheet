@@ -663,6 +663,83 @@ async function handleDeleteBilling(
 }
 
 // =============================================================
+// Override Handler
+// =============================================================
+
+async function handleSaveOverride(
+  payload: Record<string, unknown>,
+): Promise<Response> {
+  const { event_id, client_id, category_id, department } = payload;
+
+  // Validate required field
+  if (!event_id || typeof event_id !== "string") {
+    return jsonResponse({ error: "Event ID is required." }, 400);
+  }
+
+  // Validate client_id is a valid string if provided
+  if (client_id && typeof client_id !== "string") {
+    return jsonResponse({ error: "Invalid client ID." }, 400);
+  }
+
+  // Validate category_id is a valid string if provided
+  if (category_id && typeof category_id !== "string") {
+    return jsonResponse({ error: "Invalid category ID." }, 400);
+  }
+
+  // Validate department against allowed values if provided
+  if (
+    department &&
+    !ALLOWED_DEPARTMENTS.includes(department as string)
+  ) {
+    return jsonResponse(
+      {
+        error: `Invalid department. Allowed: ${ALLOWED_DEPARTMENTS.join(", ")}`,
+      },
+      400,
+    );
+  }
+
+  // Build update payload
+  const updateFields: Record<string, unknown> = {
+    override_client_id: client_id ?? null,
+    override_category_id: category_id ?? null,
+    override_department: (department as string) ?? null,
+    classification_method: "user_override",
+  };
+
+  const { data, error } = await supabaseAdmin
+    .from("events")
+    .update(updateFields)
+    .eq("id", event_id)
+    .select()
+    .single();
+
+  if (error) {
+    return jsonResponse(
+      {
+        error:
+          "Could not save override. Check your connection and try again.",
+      },
+      500,
+    );
+  }
+
+  // Log to audit_log for LLM learning (D-24)
+  await supabaseAdmin.from("audit_log").insert({
+    action: "classification_override",
+    entity_type: "event",
+    entity_id: event_id as string,
+    details: JSON.stringify({
+      override_client_id: client_id,
+      override_category_id: category_id,
+      override_department: department,
+    }),
+  });
+
+  return jsonResponse({ ok: true, data });
+}
+
+// =============================================================
 // Trigger Sync Handler
 // Routes sync trigger through admin function to keep
 // SYNC_SECRET server-side (D-25, Sync Integration Notes).
@@ -767,6 +844,8 @@ Deno.serve(async (req) => {
       return handleUpdateBilling(payload);
     case "delete-billing":
       return handleDeleteBilling(payload);
+    case "save-override":
+      return handleSaveOverride(payload);
     case "trigger-sync":
       return handleTriggerSync(payload);
     default:
