@@ -24,8 +24,9 @@ export const AdminTable = ({
   addLabel = 'Add',
   onAdd,
 }) => {
-  const activeRows = useMemo(() => data.filter(r => r.active !== false), [data]);
-  const inactiveRows = useMemo(() => data.filter(r => r.active === false), [data]);
+  const sortByName = (a, b) => (a.name || '').localeCompare(b.name || '');
+  const activeRows = useMemo(() => data.filter(r => r.active !== false).sort(sortByName), [data]);
+  const inactiveRows = useMemo(() => data.filter(r => r.active === false).sort(sortByName), [data]);
 
   const hasDeactivated = inactiveRows.length > 0;
 
