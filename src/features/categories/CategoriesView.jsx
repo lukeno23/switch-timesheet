@@ -56,7 +56,7 @@ const DEPT_COLORS = {
   'Cross-Department': 'bg-stone-50 text-stone-600 border-stone-200',
 };
 
-export const CategoriesView = ({ data, onSelectCategory }) => {
+export const CategoriesView = ({ data, onSelectCategory, onChartClick }) => {
   const [collapsedDepts, setCollapsedDepts] = useState({});
 
   const toggleDept = (dept) => {
@@ -223,7 +223,7 @@ export const CategoriesView = ({ data, onSelectCategory }) => {
 
 // --- Category Detail View with enriched analytics ---
 
-export const CategoryDetailView = ({ categoryName, categoryDetailData, onBack }) => {
+export const CategoryDetailView = ({ categoryName, categoryDetailData, onBack, onChartClick }) => {
   // Switcher breakdown for this category
   const switcherAllocation = useMemo(() => {
     if (!categoryDetailData?.events) return [];
@@ -321,17 +321,43 @@ export const CategoryDetailView = ({ categoryName, categoryDetailData, onBack })
         <Card>
           <h3 className="text-lg font-bold text-switch-secondary font-dm mb-1">Switcher Breakdown</h3>
           <p className="text-sm text-stone-400 font-dm mb-6">Hours by team member</p>
-          <AllocationChart data={switcherAllocation} limit={10} />
+          <AllocationChart
+            data={switcherAllocation}
+            limit={10}
+            onBarClick={(entry) => {
+              if (onChartClick) {
+                const events = categoryDetailData.events.filter(d => d.switcher === entry.name);
+                onChartClick(entry.name, 'switcher', events);
+              }
+            }}
+          />
         </Card>
         <Card>
           <h3 className="text-lg font-bold text-switch-secondary font-dm mb-1">Client Distribution</h3>
           <p className="text-sm text-stone-400 font-dm mb-6">Share of total hours</p>
-          <DonutChart data={clientDistribution} dataKey="value" />
+          <DonutChart
+            data={clientDistribution}
+            dataKey="value"
+            onCellClick={(entry) => {
+              if (onChartClick) {
+                const events = categoryDetailData.events.filter(d => d.client === entry.name);
+                onChartClick(entry.name, 'client', events);
+              }
+            }}
+          />
         </Card>
       </div>
       <Card className="mb-8">
         <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Time Trend</h3>
-        <SimpleTrendChart data={categoryTrendData} />
+        <SimpleTrendChart
+          data={categoryTrendData}
+          onDotClick={(payload) => {
+            if (onChartClick) {
+              const dateKey = payload?.payload?.date || payload?.date;
+              onChartClick(dateKey || 'Trend Point', null, categoryDetailData.events);
+            }
+          }}
+        />
       </Card>
 
       {/* Event table */}

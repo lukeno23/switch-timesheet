@@ -14,9 +14,7 @@ import { AllocationChart } from './AllocationChart.jsx';
 import { VerticalBarChart } from './VerticalBarChart.jsx';
 import { TopSwitchersGrid } from './TopSwitchersGrid.jsx';
 import { ClientDistributionChart } from './ClientDistributionChart.jsx';
-import { UpcomingEvents } from '../../shared/components/UpcomingEvents.jsx';
-
-export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSettings }) => {
+export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSettings, onChartClick }) => {
   const [trendMetric, setTrendMetric] = useState('total');
   const [trendTimeframe, setTrendTimeframe] = useState('day');
   const [selectedLines, setSelectedLines] = useState([]);
@@ -355,6 +353,12 @@ export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSetti
             data={stats.topClients}
             color={COLORS.primary}
             onClick={(clientId) => onNavigate('client', clientId)}
+            onBarClick={(entry) => {
+              if (onChartClick) {
+                const events = data.filter(d => d.client === entry.name);
+                onChartClick(entry.name, 'client', events);
+              }
+            }}
           />
         </Card>
       </div>
@@ -399,8 +403,6 @@ export const DashboardView = ({ data, dateRange, onNavigate, apiKey, onOpenSetti
         </Card>
       </div>
 
-      {/* Upcoming Events */}
-      <UpcomingEvents events={data} />
     </div>
   );
 };

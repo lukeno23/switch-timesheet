@@ -18,7 +18,7 @@ import { DonutChart } from '../dashboard/DonutChart.jsx';
 import { WeeklyCalendar } from '../../shared/components/WeeklyCalendar.jsx';
 import { ChartDrilldownModal } from '../../shared/components/ChartDrilldownModal.jsx';
 
-export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpenSettings, billingData, clientId, clientTargetRate }) => {
+export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpenSettings, billingData, clientId, clientTargetRate, onChartClick }) => {
   const [timeframe, setTimeframe] = useState('day');
   const [trendMode, setTrendMode] = useState('total');
   const [selectedLines, setSelectedLines] = useState([]);
@@ -492,7 +492,16 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
           </div>
 
           {trendMode === 'total' ? (
-            <SimpleTrendChart data={trendData} timeframe={timeframe} />
+            <SimpleTrendChart
+              data={trendData}
+              timeframe={timeframe}
+              onDotClick={(payload) => {
+                if (onChartClick) {
+                  const dateKey = payload?.payload?.label || payload?.payload?.date;
+                  onChartClick(dateKey || 'Trend Point', null, data);
+                }
+              }}
+            />
           ) : (
             <MultiLineTrendChart data={trendData} lines={selectedLines} timeframe={timeframe} />
           )}
@@ -505,7 +514,16 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
             <Card>
               <h3 className="text-lg font-bold text-switch-secondary mb-1">Client Allocation</h3>
               <p className="font-playfair text-sm text-stone-400 mb-6">Hours by Client (Bar)</p>
-              <AllocationChart data={clientAllocation} limit={10} />
+              <AllocationChart
+                data={clientAllocation}
+                limit={10}
+                onBarClick={(entry) => {
+                  if (onChartClick) {
+                    const events = data.filter(d => d.client === entry.name);
+                    onChartClick(entry.name, 'client', events);
+                  }
+                }}
+              />
             </Card>
             <Card>
               <h3 className="text-lg font-bold text-switch-secondary mb-1">Client Distribution</h3>
@@ -526,7 +544,16 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
               <Card>
                 <h3 className="text-lg font-bold text-switch-secondary mb-1">Switcher Split</h3>
                 <p className="font-playfair text-sm text-stone-400 mb-6">Hours logged by team members</p>
-                <AllocationChart data={switcherSplit} limit={10} />
+                <AllocationChart
+                  data={switcherSplit}
+                  limit={10}
+                  onBarClick={(entry) => {
+                    if (onChartClick) {
+                      const events = data.filter(d => d.switcher === entry.name);
+                      onChartClick(entry.name, 'switcher', events);
+                    }
+                  }}
+                />
               </Card>
             ) : (
               <Card>
@@ -553,7 +580,16 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
                 </div>
                 <p className="font-playfair text-sm text-stone-400 mb-6">Distribution of time across clients</p>
                 {allocationChartType === 'bar' ? (
-                  <AllocationChart data={clientAllocation} limit={10} />
+                  <AllocationChart
+                    data={clientAllocation}
+                    limit={10}
+                    onBarClick={(entry) => {
+                      if (onChartClick) {
+                        const events = data.filter(d => d.client === entry.name);
+                        onChartClick(entry.name, 'client', events);
+                      }
+                    }}
+                  />
                 ) : (
                   <ClientDistributionChart data={clientAllocation} />
                 )}
@@ -565,7 +601,17 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
                 {type === 'department' ? 'Team Contribution' : 'Team Split'}
               </h3>
               <p className="font-playfair text-sm text-stone-400 mb-6">Internal breakdown</p>
-              <DonutChart data={secondaryAllocation} />
+              <DonutChart
+                data={secondaryAllocation}
+                onCellClick={(entry) => {
+                  if (onChartClick) {
+                    const entityType = type === 'client' ? 'department' : type === 'department' ? 'switcher' : 'department';
+                    const filterKey = entityType === 'client' ? 'client' : entityType === 'department' ? 'department' : 'switcher';
+                    const events = data.filter(d => d[filterKey] === entry.name);
+                    onChartClick(entry.name, entityType, events);
+                  }
+                }}
+              />
             </Card>
           </div>
 
