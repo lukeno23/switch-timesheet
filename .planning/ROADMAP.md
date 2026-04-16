@@ -98,7 +98,7 @@ Plans:
 - [x] 04-02-PLAN.md — Override schema + backend: DB migration, admin Edge Function save-override action, mapSupabaseRow override fields, adminApi wrapper
 - [x] 04-03-PLAN.md — Schema push + shared UI components: ChartDrilldownModal, HistoricalUpcomingToggle, FilterDropdown, ClassificationOverridePanel, TaskDrilldownModal update
 - [x] 04-04-PLAN.md — TaskTable column filtering upgrade + Task Explorer view
-- [ ] 04-05-PLAN.md — WeeklyCalendar 4-day upgrade + category drilldown analytics + Switcher calendar and per-client breakdown
+- [x] 04-05-PLAN.md — WeeklyCalendar 4-day upgrade + category drilldown analytics + Switcher calendar and per-client breakdown
 - [ ] 04-06-PLAN.md — App.jsx wiring: toggle state, Task Explorer nav, chart click handlers, UpcomingEvents removal
 - [ ] 04-07-PLAN.md — LLM override learning loop, sync override persistence guard, final Phase 4 verification checkpoint
 **UI hint**: yes
