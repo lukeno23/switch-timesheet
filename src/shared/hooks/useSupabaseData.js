@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase.js';
 import { mapSupabaseRow } from '../utils/mapSupabaseRow.js';
 
-const EVENT_COLUMNS = 'id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)';
+const EVENT_COLUMNS = 'id, google_event_id, title, client_name_raw, task_details, start_at, end_at, duration_minutes, event_date, day_of_week, off_schedule, temporal_status, department, classification_method, rule_confidence, override_client_id, override_category_id, override_department, switcher:switchers(id, name, primary_dept, is_management_member), client:clients(id, name), category:categories(id, name, department)';
 const PAGE_SIZE = 1000;
 
 const fetchAllEvents = async () => {

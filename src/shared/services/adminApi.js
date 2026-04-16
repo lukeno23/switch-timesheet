@@ -18,3 +18,12 @@ export const adminApi = async (action, payload = {}) => {
   if (!res.ok) throw new Error(body.error || 'Request failed');
   return body;
 };
+
+export const saveOverride = async (eventId, { clientId, categoryId, department }) => {
+  return adminApi('save-override', {
+    event_id: eventId,
+    client_id: clientId || null,
+    category_id: categoryId || null,
+    department: department || null,
+  });
+};

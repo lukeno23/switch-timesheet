@@ -20,5 +20,10 @@ export const mapSupabaseRow = (row) => {
     classificationMethod: row.classification_method,
     switcherId: row.switcher?.id,
     clientId: row.client?.id,
+    // Override fields (Phase 4 — D-22, D-23)
+    overrideClientId: row.override_client_id ?? null,
+    overrideCategoryId: row.override_category_id ?? null,
+    overrideDepartment: row.override_department ?? null,
+    isUserOverride: row.classification_method === 'user_override',
   };
 };
