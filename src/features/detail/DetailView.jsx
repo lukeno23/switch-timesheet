@@ -230,6 +230,19 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
       .sort((a, b) => b.hours - a.hours);
   }, [data, type]);
 
+  // Category breakdown (all detail types)
+  const categoryBreakdown = useMemo(() => {
+    const acc = {};
+    const totalMins = data.reduce((sum, d) => sum + d.minutes, 0);
+    (data || []).forEach(d => {
+      const cat = d.categoryName || 'Misc';
+      if (!acc[cat]) acc[cat] = { name: cat, minutes: 0, count: 0 };
+      acc[cat].minutes += d.minutes;
+      acc[cat].count += 1;
+    });
+    return { items: Object.values(acc).sort((a, b) => b.minutes - a.minutes), totalMinutes: totalMins };
+  }, [data]);
+
   // Billing monthly series (client detail only)
   const billingMonthly = useMemo(() => {
     if (!billingData || !data || type !== 'client' || !clientId) return [];
@@ -566,6 +579,28 @@ export const DetailView = ({ title, type, data, dateRange, onBack, apiKey, onOpe
             </div>
           )}
         </>
+      )}
+
+      {/* Category Breakdown — all detail types */}
+      {categoryBreakdown.items.length > 0 && (
+        <Card className="mt-6">
+          <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Category Breakdown</h3>
+          <div className="space-y-2">
+            {categoryBreakdown.items.map(cat => {
+              const pct = categoryBreakdown.totalMinutes > 0 ? (cat.minutes / categoryBreakdown.totalMinutes * 100) : 0;
+              return (
+                <div key={cat.name} className="flex items-center gap-3">
+                  <span className="text-sm font-dm text-switch-secondary w-40 truncate" title={cat.name}>{cat.name}</span>
+                  <div className="flex-1 h-2 bg-switch-primary/20 rounded-full">
+                    <div className="h-2 bg-switch-primary rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs font-dm text-stone-500 w-16 text-right">{(cat.minutes / 60).toFixed(1)}h</span>
+                  <span className="text-xs font-dm text-stone-400 w-10 text-right">{pct.toFixed(0)}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
     </div>
   );

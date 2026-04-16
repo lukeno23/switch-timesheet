@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   Users, Briefcase, Building2, ArrowRight, ArrowUpDown,
-  BarChart2, Calendar as CalendarIcon, Settings, Table,
+  BarChart2, Calendar as CalendarIcon, Settings, Tag,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -20,6 +20,7 @@ import { useSupabaseData } from './shared/hooks/useSupabaseData.js';
 import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeTime.js';
 import { calcEffectiveRate } from './shared/utils/billingCalc.js';
 import { AdminView } from './features/admin/AdminView.jsx';
+import { CategoriesView } from './features/categories/CategoriesView.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -178,6 +179,16 @@ const AuthenticatedApp = () => {
     return [];
   }, [filteredData, view]);
 
+  // Category detail data
+  const categoryDetailData = useMemo(() => {
+    if (view.type !== 'category_detail' || !filteredData) return null;
+    const events = filteredData.filter(d => d.categoryName === view.id);
+    const totalMinutes = events.reduce((sum, d) => sum + d.minutes, 0);
+    const switchers = new Set(events.map(d => d.switcher));
+    const clients = new Set(events.map(d => d.client));
+    return { events, totalHours: (totalMinutes / 60).toFixed(1), switcherCount: switchers.size, clientCount: clients.size };
+  }, [filteredData, view]);
+
   if (loading) {
     return (
       <div className="p-8 space-y-6">
@@ -222,7 +233,7 @@ const AuthenticatedApp = () => {
     { id: 'switchers', label: 'Switchers', icon: Users },
     { id: 'departments', label: 'Teams', icon: Building2 },
     { id: 'clients', label: 'Clients', icon: Briefcase },
-    { id: 'tasks', label: 'Task Explorer', icon: Table },
+    { id: 'tasks', label: 'Categories', icon: Tag },
     { id: 'admin', label: 'Admin', icon: ShieldCheck },
   ];
 
@@ -252,14 +263,14 @@ const AuthenticatedApp = () => {
                 key={item.id}
                 onClick={() => setView({ type: item.id, id: null })}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
-                  view.type === item.id || view.type.startsWith(item.id.slice(0, -1))
+                  view.type === item.id || view.type.startsWith(item.id.slice(0, -1)) || (item.id === 'tasks' && view.type === 'category_detail')
                     ? 'bg-switch-bg text-switch-secondary'
                     : 'text-stone-500 hover:bg-stone-50 hover:text-switch-secondary'
                 }`}
               >
                 <item.icon size={20} />
                 <span className="hidden lg:block">{item.label}</span>
-                {(view.type === item.id) && (
+                {(view.type === item.id || (item.id === 'tasks' && view.type === 'category_detail')) && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-switch-primary hidden lg:block" />
                 )}
               </button>
@@ -371,17 +382,43 @@ const AuthenticatedApp = () => {
             )}
 
             {view.type === 'tasks' && (
+              <CategoriesView
+                data={filteredData}
+                onSelectCategory={(categoryName) => setView({ type: 'category_detail', id: categoryName })}
+              />
+            )}
+
+            {view.type === 'category_detail' && categoryDetailData && (
               <div className="animate-in fade-in duration-500">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-switch-secondary font-dm">Task Explorer</h2>
+                <button
+                  onClick={() => setView({ type: 'tasks', id: null })}
+                  className="flex items-center text-switch-primary hover:text-switch-primary-dark mb-4 font-dm"
+                >
+                  <ArrowRight className="rotate-180 mr-1" size={16} /> Back to Categories
+                </button>
+                <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-2">{view.id}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <Card>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Total Hours</p>
+                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.totalHours}</p>
+                  </Card>
+                  <Card>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Switchers</p>
+                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.switcherCount}</p>
+                  </Card>
+                  <Card>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-wider font-dm mb-1">Clients</p>
+                    <p className="text-2xl font-bold text-switch-secondary font-dm">{categoryDetailData.clientCount}</p>
+                  </Card>
                 </div>
                 <Card>
-                  <TaskTable data={filteredData || []} showContext />
+                  <h3 className="text-lg font-bold text-switch-secondary font-dm mb-4">Events</h3>
+                  <TaskTable data={categoryDetailData.events} showContext />
                 </Card>
               </div>
             )}
 
-            {view.type.endsWith('_detail') && (() => {
+            {view.type.endsWith('_detail') && view.type !== 'category_detail' && (() => {
               const clientRecord = view.type === 'client_detail'
                 ? refData?.clients?.find(c => c.name === view.id)
                 : null;
