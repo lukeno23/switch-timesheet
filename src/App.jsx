@@ -213,7 +213,7 @@ const AuthenticatedApp = () => {
     return { events, totalHours: (totalMinutes / 60).toFixed(1), switcherCount: switchers.size, clientCount: clients.size };
   }, [filteredData, view]);
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="p-8 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -473,6 +473,7 @@ const AuthenticatedApp = () => {
                 billingData={billingData}
                 onDataChange={refetch}
                 latestSync={latestSync}
+                initialTab={view.adminTab}
               />
             )}
 
