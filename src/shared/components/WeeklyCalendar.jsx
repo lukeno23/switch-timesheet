@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-
-const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { COLORS } from '../../constants/colors.js';
 
 const getMonday = (date) => {
   const d = new Date(date);
@@ -17,13 +17,13 @@ const addDays = (date, days) => {
   return d;
 };
 
-export const WeeklyCalendar = ({ data }) => {
+export const WeeklyCalendar = ({ data, onEventClick }) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()));
 
   // Pre-group tasks by day using Map — O(n) instead of per-cell O(n) filter
   const tasksByDay = useMemo(() => {
     const map = new Map();
-    data.forEach(entry => {
+    (data || []).forEach(entry => {
       if (!entry.dateObj) return;
       const key = entry.dateObj.toDateString();
       if (!map.has(key)) map.set(key, []);
@@ -32,63 +32,96 @@ export const WeeklyCalendar = ({ data }) => {
     return map;
   }, [data]);
 
+  // Mon-Thu only (Switch 4-day work week)
   const weekDays = useMemo(() => {
-    return DAYS_OF_WEEK.map((name, i) => ({
-      name,
-      date: addDays(currentWeekStart, i),
-    }));
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu'];
+    const days = [];
+    for (let i = 0; i < 4; i++) {
+      const date = new Date(currentWeekStart);
+      date.setDate(date.getDate() + i);
+      days.push({ name: dayNames[i], date });
+    }
+    return days;
   }, [currentWeekStart]);
+
+  // Build client-to-color index for consistent coloring
+  const clientColorMap = useMemo(() => {
+    const uniqueClients = [...new Set((data || []).map(d => d.client).filter(Boolean))].sort();
+    const map = {};
+    uniqueClients.forEach((client, i) => {
+      map[client] = COLORS.chartPalette[i % COLORS.chartPalette.length];
+    });
+    return map;
+  }, [data]);
 
   const prevWeek = () => setCurrentWeekStart(d => addDays(d, -7));
   const nextWeek = () => setCurrentWeekStart(d => addDays(d, 7));
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-center gap-3 mb-4">
         <button
           onClick={prevWeek}
-          className="px-3 py-1 text-sm text-stone-500 hover:text-switch-secondary transition-colors"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-stone-500 hover:text-switch-secondary hover:bg-stone-100 transition-colors"
         >
-          &larr; Prev
+          <ChevronLeft size={16} />
         </button>
         <span className="text-sm font-bold text-switch-secondary font-dm">
           Week of {currentWeekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </span>
         <button
           onClick={nextWeek}
-          className="px-3 py-1 text-sm text-stone-500 hover:text-switch-secondary transition-colors"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-stone-500 hover:text-switch-secondary hover:bg-stone-100 transition-colors"
         >
-          Next &rarr;
+          <ChevronRight size={16} />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {weekDays.map(({ name, date }) => {
-          const tasks = tasksByDay.get(date.toDateString()) ?? [];
-          const totalHours = tasks.reduce((acc, t) => acc + t.minutes / 60, 0);
+          const dayKey = date.toDateString();
+          const tasks = tasksByDay.get(dayKey) || [];
+          const dailyHours = tasks.reduce((acc, t) => acc + t.minutes / 60, 0);
+          const warningClass = dailyHours > 10
+            ? 'bg-red-50 border border-red-200'
+            : dailyHours > 8
+              ? 'bg-amber-50 border border-amber-200'
+              : 'bg-stone-50';
 
           return (
-            <div key={name} className="min-h-[120px] bg-stone-50 rounded-xl p-2">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-stone-400 uppercase">{name}</span>
-                <span className="text-xs text-stone-300">{date.getDate()}</span>
+            <div key={name} className={`min-h-[120px] rounded-xl p-2 ${warningClass}`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-stone-500 font-dm">{name}</span>
+                <span className="text-xs text-stone-400 font-dm">
+                  {date.getDate()}/{date.getMonth() + 1}
+                </span>
               </div>
               {tasks.length === 0 ? (
-                <p className="text-xs text-stone-300 italic">No tasks</p>
+                <p className="text-xs text-stone-300 font-dm">No tasks</p>
               ) : (
-                <>
-                  <p className="text-xs font-bold text-switch-primary mb-1">{totalHours.toFixed(1)}h</p>
-                  <div className="space-y-1">
-                    {tasks.slice(0, 3).map((task, i) => (
-                      <div key={i} className="bg-white rounded px-1 py-0.5 text-xs text-stone-600 truncate" title={task.task}>
-                        {task.client}
-                      </div>
-                    ))}
-                    {tasks.length > 3 && (
-                      <p className="text-xs text-stone-400">+{tasks.length - 3} more</p>
-                    )}
-                  </div>
-                </>
+                <div className="space-y-1">
+                  {tasks.map((task, i) => (
+                    <div
+                      key={i}
+                      onClick={() => onEventClick && onEventClick(task)}
+                      className="rounded px-1.5 py-1 text-xs cursor-pointer hover:opacity-80 transition-opacity mb-1"
+                      style={{
+                        backgroundColor: clientColorMap[task.client] || COLORS.chartPalette[0],
+                        color: '#fff',
+                        minHeight: `${Math.max(20, (task.minutes / 60) * 48)}px`,
+                      }}
+                      title={`${task.task} (${(task.minutes / 60).toFixed(1)}h)`}
+                    >
+                      <p className="font-bold text-xs truncate">{task.client}</p>
+                      <p className="text-xs text-white/80 truncate">{task.categoryName}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {dailyHours > 8 && (
+                <p className="text-xs text-amber-600 font-dm mt-1" title="Over 8 hours scheduled this day">
+                  {dailyHours.toFixed(1)}h total
+                </p>
               )}
             </div>
           );
