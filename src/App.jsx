@@ -18,6 +18,7 @@ import { DashboardView } from './features/dashboard/DashboardView.jsx';
 import { DetailView } from './features/detail/DetailView.jsx';
 import { useSupabaseData } from './shared/hooks/useSupabaseData.js';
 import { formatRelativeTime, formatAbsoluteTime } from './shared/utils/relativeTime.js';
+import { AdminView } from './features/admin/AdminView.jsx';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -365,12 +366,12 @@ const AuthenticatedApp = () => {
             )}
 
             {view.type === 'admin' && (
-              <div className="animate-in fade-in duration-500">
-                <h2 className="text-3xl font-bold text-switch-secondary font-dm mb-6">Admin</h2>
-                <Card>
-                  <p className="text-sm text-stone-500 font-dm">Admin panel will be available after Plan 04 ships.</p>
-                </Card>
-              </div>
+              <AdminView
+                refData={refData}
+                billingData={billingData}
+                onDataChange={refetch}
+                latestSync={latestSync}
+              />
             )}
           </ErrorBoundary>
         </main>
