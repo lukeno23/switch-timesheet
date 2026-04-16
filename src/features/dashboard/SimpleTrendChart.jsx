@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { COLORS } from '../../constants/colors.js';
 
-export const SimpleTrendChart = ({ data, timeframe, color = COLORS.primary }) => {
+export const SimpleTrendChart = ({ data, timeframe, color = COLORS.primary, onDotClick }) => {
   const gradientId = useId();
 
   return (
@@ -44,7 +44,12 @@ export const SimpleTrendChart = ({ data, timeframe, color = COLORS.primary }) =>
             strokeWidth={3}
             fillOpacity={1}
             fill={`url(#${gradientId})`}
-            activeDot={{ r: 6, strokeWidth: 0 }}
+            activeDot={{
+              r: 6,
+              strokeWidth: 0,
+              style: { cursor: onDotClick ? 'pointer' : 'default' },
+              onClick: (e, payload) => onDotClick && onDotClick(payload),
+            }}
           />
         </AreaChart>
       </ResponsiveContainer>

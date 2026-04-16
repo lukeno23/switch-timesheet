@@ -3,7 +3,7 @@ import {
 } from 'recharts';
 import { COLORS } from '../../constants/colors.js';
 
-export const DonutChart = ({ data, nameKey = 'name', dataKey = 'hours' }) => {
+export const DonutChart = ({ data, nameKey = 'name', dataKey = 'hours', onCellClick }) => {
   return (
     <div className="h-72 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
@@ -22,6 +22,8 @@ export const DonutChart = ({ data, nameKey = 'name', dataKey = 'hours' }) => {
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS.chartPalette[index % COLORS.chartPalette.length]}
+                onClick={() => onCellClick && onCellClick(entry)}
+                style={{ cursor: onCellClick ? 'pointer' : 'default' }}
               />
             ))}
           </Pie>

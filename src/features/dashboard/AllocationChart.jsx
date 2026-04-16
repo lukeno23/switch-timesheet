@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { COLORS } from '../../constants/colors.js';
 
-export const AllocationChart = ({ data, dataKey = 'hours', nameKey = 'name', color = null, limit = null, onClick }) => {
+export const AllocationChart = ({ data, dataKey = 'hours', nameKey = 'name', color = null, limit = null, onClick, onBarClick }) => {
   const sortedData = [...data].sort((a, b) => b[dataKey] - a[dataKey]);
   const displayData = limit ? sortedData.slice(0, limit) : sortedData;
   const chartHeight = Math.max(displayData.length * 40, 300);
@@ -24,7 +24,7 @@ export const AllocationChart = ({ data, dataKey = 'hours', nameKey = 'name', col
               dataKey={nameKey}
               type="category"
               width={100}
-              tick={{ fontSize: 13, fill: '#444', fontFamily: 'DM Sans', cursor: onClick ? 'pointer' : 'default' }}
+              tick={{ fontSize: 13, fill: '#444', fontFamily: 'DM Sans', cursor: (onClick || onBarClick) ? 'pointer' : 'default' }}
               interval={0}
               onClick={(e) => onClick && onClick(e.value)}
             />
@@ -37,8 +37,11 @@ export const AllocationChart = ({ data, dataKey = 'hours', nameKey = 'name', col
               dataKey={dataKey}
               radius={[0, 4, 4, 0]}
               barSize={20}
-              onClick={(e) => onClick && onClick(e[nameKey])}
-              cursor={onClick ? 'pointer' : 'default'}
+              onClick={(e) => {
+                if (onBarClick) onBarClick(e);
+                if (onClick) onClick(e[nameKey]);
+              }}
+              cursor={(onClick || onBarClick) ? 'pointer' : 'default'}
             >
               {displayData.map((entry, index) => (
                 <Cell
