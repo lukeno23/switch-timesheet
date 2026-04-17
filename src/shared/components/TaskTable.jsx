@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { ArrowUpDown, Filter } from 'lucide-react';
 import { FilterDropdown } from './FilterDropdown.jsx';
 
@@ -29,7 +29,7 @@ export const TaskTable = ({ data, showContext = false, showOverride = false, onO
           items = items.filter(d => d.dateObj <= endDate);
         }
       } else {
-        if (Array.isArray(filterVal) && filterVal.length > 0 && filterVal.length < (filterOptions[col]?.length || 0)) {
+        if (Array.isArray(filterVal) && filterVal.length < (filterOptions[col]?.length || 0)) {
           items = items.filter(d => filterVal.includes(d[col]));
         }
       }
@@ -85,26 +85,30 @@ export const TaskTable = ({ data, showContext = false, showOverride = false, onO
 
   const hasActiveFilter = (col) => {
     const f = activeFilters[col];
-    if (!f) return false;
+    if (f === undefined) return false;
     if (col === 'dateObj') return f.start || f.end;
-    return Array.isArray(f) && f.length > 0 && f.length < (filterOptions[col]?.length || 0);
+    return Array.isArray(f) && f.length < (filterOptions[col]?.length || 0);
   };
 
-  const FilterIcon = ({ col, type }) => (
-    <div className="relative">
-      <button onClick={(e) => { e.stopPropagation(); toggleFilter(col); }} className="ml-0.5">
-        <Filter size={12} className={hasActiveFilter(col) ? 'text-switch-primary' : 'text-stone-300'} />
-      </button>
-      <FilterDropdown
-        type={type}
-        options={type === 'categorical' ? filterOptions[col] : undefined}
-        selected={type === 'categorical' ? (activeFilters[col] || filterOptions[col] || []) : (activeFilters[col] || { start: '', end: '' })}
-        onChange={(val) => updateFilter(col, val)}
-        isOpen={openFilterCol === col}
-        onToggle={() => toggleFilter(col)}
-      />
-    </div>
-  );
+  const FilterIcon = ({ col, type }) => {
+    const anchorRef = useRef(null);
+    return (
+      <div className="relative">
+        <button ref={anchorRef} onClick={(e) => { e.stopPropagation(); toggleFilter(col); }} className="ml-0.5">
+          <Filter size={12} className={hasActiveFilter(col) ? 'text-switch-primary' : 'text-stone-300'} />
+        </button>
+        <FilterDropdown
+          type={type}
+          options={type === 'categorical' ? filterOptions[col] : undefined}
+          selected={type === 'categorical' ? (activeFilters[col] !== undefined ? activeFilters[col] : filterOptions[col] || []) : (activeFilters[col] || { start: '', end: '' })}
+          onChange={(val) => updateFilter(col, val)}
+          isOpen={openFilterCol === col}
+          onToggle={() => toggleFilter(col)}
+          anchorRef={anchorRef}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="overflow-x-auto">

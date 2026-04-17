@@ -1,20 +1,28 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { useClickOutside } from '../hooks/useClickOutside.js';
+import { createPortal } from 'react-dom';
 
-export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onToggle }) => {
+export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onToggle, anchorRef }) => {
   const dropdownRef = useRef(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
 
   useClickOutside(dropdownRef, useCallback(() => {
     if (isOpen) onToggle();
   }, [isOpen, onToggle]));
 
+  useEffect(() => {
+    if (isOpen && anchorRef?.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({ top: rect.bottom + 8, left: Math.max(8, rect.left - 100) });
+    }
+  }, [isOpen, anchorRef]);
+
   if (!isOpen) return null;
 
   const handleCheckboxToggle = (option) => {
     if (selected.includes(option)) {
-      const next = selected.filter(item => item !== option);
-      onChange(next.length === 0 ? [] : next);
+      onChange(selected.filter(item => item !== option));
     } else {
       onChange([...selected, option]);
     }
@@ -32,10 +40,12 @@ export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onTo
     onChange({ ...selected, [field]: value });
   };
 
-  return (
+  const dropdown = (
     <div
       ref={dropdownRef}
-      className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-stone-100 p-2 z-50"
+      onClick={(e) => e.stopPropagation()}
+      style={{ position: 'fixed', top: position.top, left: position.left }}
+      className="w-56 bg-white rounded-xl shadow-xl border border-stone-100 p-2 z-[100]"
     >
       {type === 'categorical' ? (
         <>
@@ -92,4 +102,6 @@ export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onTo
       )}
     </div>
   );
+
+  return createPortal(dropdown, document.body);
 };
