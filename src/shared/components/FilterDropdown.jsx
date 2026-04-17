@@ -13,13 +13,18 @@ export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onTo
 
   const handleCheckboxToggle = (option) => {
     if (selected.includes(option)) {
-      onChange(selected.filter(item => item !== option));
+      const next = selected.filter(item => item !== option);
+      onChange(next.length === 0 ? [] : next);
     } else {
       onChange([...selected, option]);
     }
   };
 
   const handleClear = () => {
+    onChange([]);
+  };
+
+  const handleSelectAll = () => {
     onChange([...options]);
   };
 
@@ -30,26 +35,34 @@ export const FilterDropdown = ({ type, options, selected, onChange, isOpen, onTo
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-stone-100 p-2 z-50 max-h-64 overflow-y-auto"
+      className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-stone-100 p-2 z-50"
     >
       {type === 'categorical' ? (
         <>
-          {options.map((option) => (
+          <div className="max-h-48 overflow-y-auto">
+            {options.map((option) => (
+              <button
+                key={option}
+                onClick={(e) => { e.preventDefault(); handleCheckboxToggle(option); }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:bg-stone-50 transition-colors min-h-[36px] ${
+                  selected.includes(option) ? 'bg-switch-bg text-switch-secondary font-medium' : 'text-stone-600'
+                }`}
+              >
+                <span className="truncate font-dm">{option}</span>
+                {selected.includes(option) && <Check size={14} className="text-switch-primary" />}
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-stone-100 mt-1 pt-1 flex justify-between">
             <button
-              key={option}
-              onClick={() => handleCheckboxToggle(option)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:bg-stone-50 transition-colors min-h-[36px] ${
-                selected.includes(option) ? 'bg-switch-bg text-switch-secondary font-medium' : 'text-stone-600'
-              }`}
+              onClick={handleSelectAll}
+              className="px-3 py-1.5 text-xs text-stone-400 hover:text-stone-600 font-dm transition-colors"
             >
-              <span className="truncate font-dm">{option}</span>
-              {selected.includes(option) && <Check size={14} className="text-switch-primary" />}
+              Select All
             </button>
-          ))}
-          <div className="border-t border-stone-100 mt-1 pt-1">
             <button
               onClick={handleClear}
-              className="w-full text-center px-3 py-1.5 text-xs text-stone-400 hover:text-stone-600 font-dm transition-colors"
+              className="px-3 py-1.5 text-xs text-stone-400 hover:text-stone-600 font-dm transition-colors"
             >
               Clear
             </button>
