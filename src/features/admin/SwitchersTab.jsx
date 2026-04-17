@@ -3,7 +3,7 @@ import { AdminTable, StatusBadge } from './AdminTable.jsx';
 import { AdminModal } from './AdminModal.jsx';
 import { adminApi } from '../../shared/services/adminApi.js';
 
-const DEPARTMENTS = ['Brand', 'Design', 'Digital', 'Film', 'Management', 'Production'];
+const DEPARTMENTS = ['Brand', 'Design', 'Management', 'Marketing', 'PM'];
 
 const EMPTY_FORM = {
   name: '',

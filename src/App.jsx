@@ -283,23 +283,33 @@ const AuthenticatedApp = () => {
           </div>
 
           <nav className="p-4 space-y-2 flex-1">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setView({ type: item.id, id: null })}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
-                  view.type === item.id || view.type.startsWith(item.id.slice(0, -1)) || (item.id === 'tasks' && view.type === 'category_detail')
-                    ? 'bg-switch-bg text-switch-secondary'
-                    : 'text-stone-500 hover:bg-stone-50 hover:text-switch-secondary'
-                }`}
-              >
-                <item.icon size={20} />
-                <span className="hidden lg:block">{item.label}</span>
-                {(view.type === item.id || (item.id === 'tasks' && view.type === 'category_detail')) && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-switch-primary hidden lg:block" />
-                )}
-              </button>
-            ))}
+            {navItems.map(item => {
+              const detailToNav = {
+                switcher_detail: 'switchers',
+                dept_detail: 'departments',
+                client_detail: 'clients',
+                category_detail: 'tasks',
+              };
+              const activeNavId = detailToNav[view.type] || view.type;
+              const isActive = activeNavId === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setView({ type: item.id, id: null })}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
+                    isActive
+                      ? 'bg-switch-bg text-switch-secondary'
+                      : 'text-stone-500 hover:bg-stone-50 hover:text-switch-secondary'
+                  }`}
+                >
+                  <item.icon size={20} />
+                  <span className="hidden lg:block">{item.label}</span>
+                  {isActive && (
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-switch-primary hidden lg:block" />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Historical/Upcoming Toggle + Date Filter */}
