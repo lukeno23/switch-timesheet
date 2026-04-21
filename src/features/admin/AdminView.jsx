@@ -1,21 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Users, Briefcase, Tag, Receipt, RefreshCw } from 'lucide-react';
+import { Users, Briefcase, Tag, Receipt, RefreshCw, Settings } from 'lucide-react';
 import { SwitchersTab } from './SwitchersTab.jsx';
 import { ClientsTab } from './ClientsTab.jsx';
 import { CategoriesTab } from './CategoriesTab.jsx';
 import { BillingTab } from './BillingTab.jsx';
 import { SyncTab } from './SyncTab.jsx';
-
-/**
- * AdminView - Tab container for 5 admin sub-sections.
- *
- * Props:
- *   refData - { switchers, clients, aliases, categories }
- *   billingData - array of billing entries
- *   onDataChange - fn() to refetch data after mutations
- *   latestSync - latest sync_runs row
- *   initialTab - string, default 'switchers'
- */
+import { SettingsTab } from './SettingsTab.jsx';
 
 const TABS = [
   { id: 'switchers', label: 'Switchers', icon: Users },
@@ -23,6 +13,7 @@ const TABS = [
   { id: 'categories', label: 'Categories', icon: Tag },
   { id: 'billing', label: 'Billing', icon: Receipt },
   { id: 'sync', label: 'Sync', icon: RefreshCw },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export const AdminView = ({
@@ -31,6 +22,8 @@ export const AdminView = ({
   onDataChange,
   latestSync,
   initialTab = 'switchers',
+  apiKey,
+  setApiKey,
 }) => {
   const [activeTab, setActiveTab] = useState(initialTab || 'switchers');
 
@@ -97,6 +90,12 @@ export const AdminView = ({
         <SyncTab
           latestSync={latestSync}
           onDataChange={onDataChange}
+        />
+      )}
+      {activeTab === 'settings' && (
+        <SettingsTab
+          apiKey={apiKey}
+          setApiKey={setApiKey}
         />
       )}
     </div>

@@ -9,7 +9,6 @@ import { COLORS } from './constants/colors.js';
 import { LogoMain, LogoSquare } from './constants/logos.jsx';
 import { PasswordGate } from './shared/components/PasswordGate.jsx';
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
-import { SettingsModal } from './shared/components/SettingsModal.jsx';
 import { Card } from './shared/components/Card.jsx';
 import { TaskTable } from './shared/components/TaskTable.jsx';
 import { SyncStatusChip } from './shared/components/SyncStatusChip.jsx';
@@ -106,7 +105,6 @@ const AuthenticatedApp = () => {
   const [sortOrder, setSortOrder] = useState('alpha');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('switch_ai_key') || '');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [upcomingMode, setUpcomingMode] = useState(false);
   const [chartModal, setChartModal] = useState({ isOpen: false, title: '', tasks: [], onNavigate: null });
 
@@ -265,13 +263,6 @@ const AuthenticatedApp = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-switch-bg flex font-dm text-switch-secondary">
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          apiKey={apiKey}
-          setApiKey={setApiKey}
-        />
-
         {/* Sidebar */}
         <aside className="w-20 lg:w-64 bg-white border-r border-stone-100 flex-shrink-0 flex flex-col sticky top-0 h-screen z-10 transition-all">
           <div className="flex flex-col justify-center items-center lg:items-start lg:px-8 py-6 border-b border-stone-50">
@@ -317,28 +308,26 @@ const AuthenticatedApp = () => {
             <div className="mb-3">
               <HistoricalUpcomingToggle upcomingMode={upcomingMode} onChange={setUpcomingMode} />
             </div>
-            {!upcomingMode && (
-              <>
-                <div className="flex items-center gap-2 mb-2 text-stone-400">
-                  <CalendarIcon size={14} />
-                  <span className="text-xs font-bold uppercase tracking-wider">Date Range</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="date"
-                    value={dateRange.start}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
-                  />
-                  <input
-                    type="date"
-                    value={dateRange.end}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600"
-                  />
-                </div>
-              </>
-            )}
+            <div className="flex items-center gap-2 mb-2 text-stone-400">
+              <CalendarIcon size={14} />
+              <span className="text-xs font-bold uppercase tracking-wider">Date Range</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                disabled={upcomingMode}
+                className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600 disabled:bg-stone-50 disabled:text-stone-300 disabled:cursor-not-allowed"
+              />
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                disabled={upcomingMode}
+                className="w-full text-xs p-2 border border-stone-200 rounded-lg focus:outline-none focus:border-switch-primary font-dm text-stone-600 disabled:bg-stone-50 disabled:text-stone-300 disabled:cursor-not-allowed"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -358,7 +347,11 @@ const AuthenticatedApp = () => {
               {latestSync?.errors && Object.keys(latestSync.errors).length > 0 && (
                 <SyncStatusChip onClick={() => setView({ type: 'admin', adminTab: 'sync' })} />
               )}
-              <button onClick={() => setIsSettingsOpen(true)} className="text-stone-400 hover:text-switch-secondary">
+              <button
+                onClick={() => setView({ type: 'admin', adminTab: 'settings' })}
+                className="text-stone-400 hover:text-switch-secondary"
+                title="Settings"
+              >
                 <Settings size={20} />
               </button>
             </div>
@@ -374,7 +367,7 @@ const AuthenticatedApp = () => {
                 dateRange={dateRange}
                 onNavigate={handleNavigate}
                 apiKey={apiKey}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenSettings={() => setView({ type: 'admin', adminTab: 'settings' })}
                 onChartClick={handleChartClick}
               />
             )}
@@ -468,7 +461,7 @@ const AuthenticatedApp = () => {
                     setView({ type: backType, id: null });
                   }}
                   apiKey={apiKey}
-                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onOpenSettings={() => setView({ type: 'admin', adminTab: 'settings' })}
                   billingData={billingData}
                   clientId={clientRecord?.id}
                   clientTargetRate={clientRecord?.target_hourly_rate}
@@ -484,6 +477,8 @@ const AuthenticatedApp = () => {
                 onDataChange={refetch}
                 latestSync={latestSync}
                 initialTab={view.adminTab}
+                apiKey={apiKey}
+                setApiKey={setApiKey}
               />
             )}
 
