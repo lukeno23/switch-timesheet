@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { RefreshCw, Check, CalendarDays } from 'lucide-react';
 import { AdminTable } from './AdminTable.jsx';
 import { adminApi } from '../../shared/services/adminApi.js';
-import { useSyncStatus, buildChunks } from '../../shared/hooks/useSyncStatus.js';
+import { buildChunks } from '../../shared/hooks/useSyncStatus.js';
 import { supabase } from '../../shared/services/supabase.js';
 
 const formatDateTime = (ts) => {
@@ -62,8 +62,8 @@ const shiftISO = (days) => {
   return d.toISOString().split('T')[0];
 };
 
-export const SyncTab = ({ onDataChange }) => {
-  const { syncState, chunkProgress, result, triggerSync, reset } = useSyncStatus();
+export const SyncTab = ({ onDataChange, sync }) => {
+  const { syncState, chunkProgress, result, triggerSync, reset } = sync;
   const [syncRuns, setSyncRuns] = useState([]);
   const [loadingRuns, setLoadingRuns] = useState(true);
   const [toast, setToast] = useState(null);

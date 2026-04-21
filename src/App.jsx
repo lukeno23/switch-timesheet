@@ -23,6 +23,8 @@ import { CategoriesView, CategoryDetailView } from './features/categories/Catego
 import { HistoricalUpcomingToggle } from './shared/components/HistoricalUpcomingToggle.jsx';
 import { ChartDrilldownModal } from './shared/components/ChartDrilldownModal.jsx';
 import { TaskExplorerView } from './features/task-explorer/TaskExplorerView.jsx';
+import { SyncFloatingStatus } from './shared/components/SyncFloatingStatus.jsx';
+import { useSyncStatus } from './shared/hooks/useSyncStatus.js';
 
 // --- ListView (inline — thin list rendering, no sub-components needed) ---
 
@@ -107,6 +109,7 @@ const AuthenticatedApp = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('switch_ai_key') || '');
   const [upcomingMode, setUpcomingMode] = useState(false);
   const [chartModal, setChartModal] = useState({ isOpen: false, title: '', tasks: [], onNavigate: null });
+  const sync = useSyncStatus();
 
   // Set default date range when data loads
   useEffect(() => {
@@ -114,6 +117,13 @@ const AuthenticatedApp = () => {
       setDateRange({ start: '2026-01-04', end: new Date().toISOString().split('T')[0] });
     }
   }, [data]);
+
+  // Refetch data when a sync finishes so dashboards pick up new classifications
+  useEffect(() => {
+    if (sync.syncState === 'done' || sync.syncState === 'error' || sync.syncState === 'fallback') {
+      refetch();
+    }
+  }, [sync.syncState, refetch]);
 
   const handleNavigate = (type, id) => {
     setView({ type: type + '_detail', id });
@@ -479,6 +489,7 @@ const AuthenticatedApp = () => {
                 initialTab={view.adminTab}
                 apiKey={apiKey}
                 setApiKey={setApiKey}
+                sync={sync}
               />
             )}
 
@@ -499,6 +510,12 @@ const AuthenticatedApp = () => {
             onNavigate={chartModal.onNavigate}
           />
         </main>
+
+        <SyncFloatingStatus
+          sync={sync}
+          onOpenSyncTab={() => setView({ type: 'admin', adminTab: 'sync' })}
+          isOnSyncTab={view.type === 'admin' && view.adminTab === 'sync'}
+        />
       </div>
     </ErrorBoundary>
   );

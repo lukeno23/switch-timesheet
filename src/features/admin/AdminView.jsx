@@ -24,6 +24,7 @@ export const AdminView = ({
   initialTab = 'switchers',
   apiKey,
   setApiKey,
+  sync,
 }) => {
   const [activeTab, setActiveTab] = useState(initialTab || 'switchers');
 
@@ -90,6 +91,7 @@ export const AdminView = ({
         <SyncTab
           latestSync={latestSync}
           onDataChange={onDataChange}
+          sync={sync}
         />
       )}
       {activeTab === 'settings' && (
