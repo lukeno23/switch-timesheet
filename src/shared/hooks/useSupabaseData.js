@@ -43,7 +43,7 @@ export const useSupabaseData = () => {
           supabase.from('categories').select('*'),
           supabase.from('client_aliases').select('*'),
           supabase.from('client_billing').select('*'),
-          supabase.from('sync_runs').select('*').order('started_at', { ascending: false }).limit(1),
+          supabase.from('sync_runs').select('*').in('status', ['success', 'partial']).order('completed_at', { ascending: false }).limit(1),
         ]);
 
       const queryError = [switchersRes, clientsRes, categoriesRes, aliasesRes, billingRes, syncRes]

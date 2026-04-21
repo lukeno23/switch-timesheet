@@ -45,7 +45,7 @@ export const useSyncStatus = () => {
         .order('started_at', { ascending: false })
         .limit(1);
       const run = data?.[0];
-      if (run && (run.status === 'completed' || run.status === 'failed')) return run;
+      if (run && ['success', 'partial', 'failed'].includes(run.status)) return run;
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
     }
     return { status: 'timeout' };

@@ -43,7 +43,8 @@ const formatWindow = (start, end) => {
 
 const StatusBadgeSyncRun = ({ status }) => {
   const styles = {
-    completed: 'bg-green-100 text-green-700',
+    success: 'bg-green-100 text-green-700',
+    partial: 'bg-amber-100 text-amber-700',
     failed: 'bg-red-100 text-red-700',
     running: 'bg-amber-100 text-amber-700',
   };
@@ -220,8 +221,10 @@ export const SyncTab = ({ onDataChange }) => {
             <span
               key={i}
               className={`text-[11px] font-dm px-2 py-0.5 rounded ${
-                c.status === 'completed'
+                c.status === 'success'
                   ? 'bg-green-50 text-green-700'
+                  : c.status === 'partial'
+                  ? 'bg-amber-50 text-amber-700'
                   : c.status === 'failed'
                   ? 'bg-red-50 text-red-700'
                   : 'bg-stone-100 text-stone-500'

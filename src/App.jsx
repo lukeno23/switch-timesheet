@@ -338,8 +338,8 @@ const AuthenticatedApp = () => {
               </div>
               <div className="hidden lg:block">
                 <p className="text-sm font-bold text-switch-secondary font-dm">Switch Admin</p>
-                <p className="text-xs text-stone-400 font-dm" title={latestSync ? formatAbsoluteTime(latestSync.started_at) : ''}>
-                  Last synced: <span className="font-bold text-switch-secondary">{latestSync ? formatRelativeTime(latestSync.started_at) : 'Never'}</span>
+                <p className="text-xs text-stone-400 font-dm" title={latestSync?.completed_at ? formatAbsoluteTime(latestSync.completed_at) : ''}>
+                  Last synced: <span className="font-bold text-switch-secondary">{latestSync?.completed_at ? formatRelativeTime(latestSync.completed_at) : 'Never'}</span>
                 </p>
               </div>
             </div>
